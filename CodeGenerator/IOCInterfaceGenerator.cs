@@ -16,13 +16,13 @@ namespace CodeGenerator
             repositoryText.AppendLine("");
             repositoryText.AppendLine("namespace " + nameSpace);
             repositoryText.AppendLine("{");
-            repositoryText.AppendLine("    public interface IRepository<T>");
-            repositoryText.AppendLine("    {");
-            repositoryText.AppendLine("        List<T> GetAll();");
-            repositoryText.AppendLine("        T GetByID(Guid id);");
-            repositoryText.AppendLine("        void Save(T item);");
-            repositoryText.AppendLine("        void Delete(Guid id);");
-            repositoryText.AppendLine("    }");
+            repositoryText.AppendLine("\tpublic interface IRepository<T>");
+            repositoryText.AppendLine("\t{");
+            repositoryText.AppendLine("\t\tList<T> GetAll();");
+            repositoryText.AppendLine("\t\tT GetByID(Guid id);");
+            repositoryText.AppendLine("\t\tvoid Save(T item);");
+            repositoryText.AppendLine("\t\tvoid Delete(Guid id);");
+            repositoryText.AppendLine("\t}");
             repositoryText.AppendLine("}");
 
             TextWriter repoWriter = File.CreateText(destinationFolder + "IRepository.cs");
@@ -40,15 +40,15 @@ namespace CodeGenerator
 
                 classText.AppendLine("namespace " + nameSpace);
                 classText.AppendLine("{");
-                classText.AppendLine("public interface I" + table.Name);
-                classText.AppendLine("{");
+                classText.AppendLine("\tpublic interface I" + table.Name);
+                classText.AppendLine("\t{");
 
                 foreach (SQLTableColumn column in table.Columns)
                 {
-                    classText.AppendLine($"{column.cSharpDataType} {column.Name} {{get; set; }}");
+                    classText.AppendLine($"\t\t{column.cSharpDataType} {column.Name} {{get; set; }}");
                 }
 
-                classText.AppendLine("}");
+                classText.AppendLine("\t}");
                 classText.AppendLine("}");
 
                 TextWriter writer = File.CreateText(destinationFolder + table.Name + ".cs");
