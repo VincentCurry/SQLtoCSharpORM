@@ -9,6 +9,28 @@ namespace CodeGenerator
     {
         public void GenerateClasses(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
+            StringBuilder repositoryText = new StringBuilder();
+            
+            repositoryText.AppendLine("using System;");
+            repositoryText.AppendLine("using System.Collections.Generic;");
+            repositoryText.AppendLine("");
+            repositoryText.AppendLine("namespace " + nameSpace);
+            repositoryText.AppendLine("{");
+            repositoryText.AppendLine("    public interface IRepository<T>");
+            repositoryText.AppendLine("    {");
+            repositoryText.AppendLine("        List<T> GetAll();");
+            repositoryText.AppendLine("        T GetByID(Guid id);");
+            repositoryText.AppendLine("        void Save(T item);");
+            repositoryText.AppendLine("        void Delete(Guid id);");
+            repositoryText.AppendLine("    }");
+            repositoryText.AppendLine("}");
+
+            TextWriter repoWriter = File.CreateText(destinationFolder + "IRepository.cs");
+
+            repoWriter.Write(repositoryText.ToString());
+
+            repoWriter.Close();
+
             foreach (SQLTable table in tables)
             {
                 StringBuilder classText = new StringBuilder();
