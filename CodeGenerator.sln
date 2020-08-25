@@ -1,7 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator", "CodeGenerator\CodeGenerator.csproj", "{EF46213C-A5FA-4A94-9F5E-9306DC668518}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLGeneratorTest", "..\SQLGeneratorTest\SQLGeneratorTest\SQLGeneratorTest.csproj", "{5B627F6B-E57C-4583-A766-80A04EBDE060}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,8 +17,15 @@ Global
 		{EF46213C-A5FA-4A94-9F5E-9306DC668518}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF46213C-A5FA-4A94-9F5E-9306DC668518}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF46213C-A5FA-4A94-9F5E-9306DC668518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B627F6B-E57C-4583-A766-80A04EBDE060}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B627F6B-E57C-4583-A766-80A04EBDE060}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B627F6B-E57C-4583-A766-80A04EBDE060}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B627F6B-E57C-4583-A766-80A04EBDE060}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D8BB791-5939-4B02-B676-07B07C08B94F}
 	EndGlobalSection
 EndGlobal
