@@ -5,7 +5,7 @@ using System.IO;
 
 namespace CodeGenerator
 {
-    public class IOCInterfaceGenerator
+    public class IOCDataClassesGenerator
     {
         public void GenerateClasses(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
@@ -25,7 +25,7 @@ namespace CodeGenerator
             repositoryText.AppendLine("\t}");
             repositoryText.AppendLine("}");
 
-            TextWriter repoWriter = File.CreateText(destinationFolder + "IRepository.cs");
+            TextWriter repoWriter = File.CreateText($"{destinationFolder}IRepository.cs");
 
             repoWriter.Write(repositoryText.ToString());
 
@@ -38,20 +38,36 @@ namespace CodeGenerator
                 classText.AppendLine("using System;");
                 classText.AppendLine(Environment.NewLine);
 
-                classText.AppendLine("namespace " + nameSpace);
+                classText.AppendLine($"namespace {nameSpace}");
                 classText.AppendLine("{");
-                classText.AppendLine("\tpublic interface I" + table.Name);
+                classText.AppendLine($"\tpublic class {table.Name}");
                 classText.AppendLine("\t{");
 
+                classText.AppendLine("#region Constructors");
+
+                if (table.PrimaryKey.DataType == SQLDataTypes.uniqueIdentifier)
+                    classText.AppendLine("\t\tpublic " + table.Name + "(Guid id)");
+                else
+                    classText.AppendLine("\t\tpublic " + table.Name + "(int id)");
+
+                classText.AppendLine("\t\t{");
+                classText.AppendLine($"\t\t\tthis.{table.PrimaryKey.Name} = id;");
+                classText.AppendLine("\t\t}");
+
+                classText.AppendLine("\t\tpublic " + table.Name + "()");
+                classText.AppendLine("\t\t{ }");
+
+                classText.AppendLine("#endregion");
+
                 foreach (SQLTableColumn column in table.Columns)
-                {
-                    classText.AppendLine($"\t\t{column.cSharpDataType} {column.Name} {{get; set; }}");
+                {   
+                    classText.AppendLine($"\t\tpublic {column.cSharpDataType} {column.Name} {{ get; set; }}");
                 }
 
                 classText.AppendLine("\t}");
                 classText.AppendLine("}");
 
-                TextWriter writer = File.CreateText(destinationFolder + table.Name + ".cs");
+                TextWriter writer = File.CreateText($"{destinationFolder}{table.Name}.cs");
 
                 writer.Write(classText.ToString());
 

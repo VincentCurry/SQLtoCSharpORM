@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerator.cs" />
-    <Compile Include="IOCInterfaceGenerator.cs" />
+    <Compile Include="IOCDataClassesGenerator.cs" />
     <Compile Include="IOCRepositoryGenerator.cs" />
     <Compile Include="Library.cs" />
     <Compile Include="ObjectModelGenerator.cs" />
