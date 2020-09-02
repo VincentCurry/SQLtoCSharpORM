@@ -7,9 +7,11 @@ namespace CodeGenerator
 {
     public class IOCRepositoryGenerator
     {
+        string newRegion = "#region ";
+        string endRegion = "#endregion";
         public void GenerateClasses(List<SQLTable> tables, string destinationFolder, string nameSpace, string interfaceNameSpace)
         {
-            foreach(SQLTable table in tables)
+            foreach (SQLTable table in tables)
             {
                 StringBuilder classText = new StringBuilder();
 
@@ -188,14 +190,39 @@ namespace CodeGenerator
                 classText.AppendLine("\t\t}");
                 classText.AppendLine("\t\t#endregion");
 
+                classText.AppendLine("");
+
+                classText.AppendLine($"\t\t{newRegion}Deleting Items from the database");
+
+                classText.AppendLine($"\t\tpublic void Delete({table.Name} {Library.LowerFirstCharacter(table.Name)})");
+                classText.AppendLine($"\t\t{{");
+                classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
+                classText.AppendLine("");
+                classText.AppendLine($"\t\t\t{AddParameter(table, table.PrimaryKey)}");
+                classText.AppendLine();
+                classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "Delete")})");
+
+                classText.AppendLine("\t\t" + endRegion);
+
                 classText.AppendLine("\t}"); // This is the closing of the class.
                 classText.AppendLine("}"); // This is the closing of the namespace.
-                
+
                 TextWriter writer = File.CreateText($"{destinationFolder + table.Name}RepositorySql.cs");
 
                 writer.Write(classText.ToString());
 
                 writer.Close();
+            }
+
+            string AddParameter(SQLTable table, SQLTableColumn column)
+            {
+                return $"SQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(table.Name)}.{column.Name}, SqlDbType.{column.dotNetSqlDataTypes}, {column.MaximumLength})";
+            }
+
+            string ExecuteSP(string tableName, string action)
+            {
+                return $"SQLDataServer.ExecuteSP(\"{tableName}{action}\", Constants.ConnectionString, parameters);";
+
             }
         }
     }

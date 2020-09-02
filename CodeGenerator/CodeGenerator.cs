@@ -13,6 +13,12 @@ namespace CodeGenerator
     public class SQLStatementGenerator
     {
         List<SQLTable> tablesToGenerate;
+        string go = "GO";
+        string end = "END";
+        string sqlAs = "AS";
+        string begin = "BEGIN";
+        string setNoCount = "SET NOCOUNT ON;";
+        string procedureDivider = Environment.NewLine + "--__________________________________________________" + Environment.NewLine;
 
         public SQLStatementGenerator(List<SQLTable> tables)
         {
@@ -31,15 +37,17 @@ namespace CodeGenerator
                 GenerateSelectStatement(table, sqlStatement);
                 sqlStatement.AppendLine(sqlRowIdentifier(table.PrimaryKey.Name));
                 sqlStatement.AppendLine("END");
-                sqlStatement.Append(Environment.NewLine + "--__________________________________________________" + Environment.NewLine);
+                sqlStatement.Append(procedureDivider);
                 sqlStatement.AppendLine("GO");
                 sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetAll]" + Environment.NewLine);
                 GenerateSelectStatement(table, sqlStatement);
                 sqlStatement.AppendLine("END");
                 GenerateInsertStatement(table, sqlStatement);
-                sqlStatement.Append(Environment.NewLine + "--__________________________________________________" + Environment.NewLine);
+                sqlStatement.Append(procedureDivider);
                 GenerateUpdateStatement(table, sqlStatement);
-                sqlStatement.Append(Environment.NewLine + "--__________________________________________________" + Environment.NewLine);
+                sqlStatement.Append(procedureDivider);
+                GenerateDeleteStatement(table, sqlStatement);
+                sqlStatement.Append(procedureDivider);
                 
             }
 
@@ -212,6 +220,23 @@ namespace CodeGenerator
 
             sqlStatement.AppendLine(sqlRowIdentifier(table.PrimaryKey.Name));
             sqlStatement.AppendLine("END");
+        }
+
+        void GenerateDeleteStatement(SQLTable table, StringBuilder sqlStatement)
+        {
+            sqlStatement.AppendLine(go);
+            sqlStatement.AppendLine("CREATE PROCEDURE [dbo].[" + table.Name + "Delete]" + Environment.NewLine);
+
+            sqlStatement.AppendLine($"@{table.PrimaryKey.Name} {table.PrimaryKey.DataType}");
+            sqlStatement.AppendLine(sqlAs);
+            sqlStatement.AppendLine(begin);
+            sqlStatement.AppendLine(setNoCount);
+
+            sqlStatement.AppendLine($"DELETE FROM [{table.Name}]");
+            sqlStatement.AppendLine(sqlRowIdentifier(table.PrimaryKey.Name));
+
+            sqlStatement.AppendLine(end);
+
         }
 
         string sqlRowIdentifier(string columnName)
