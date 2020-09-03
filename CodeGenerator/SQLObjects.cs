@@ -1,13 +1,11 @@
-﻿using System;
+﻿using DataServer;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DataServer;
 using System.Data.SqlClient;
 
 namespace CodeGenerator
 {
-     /*select * from sys.tables
+    /*select * from sys.tables
 
 select * from sys.objects
 
