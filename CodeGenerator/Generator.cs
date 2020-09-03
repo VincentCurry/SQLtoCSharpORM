@@ -7,6 +7,10 @@ namespace CodeGenerator
         internal string _destinationFolder;
         internal string _nameSpace;
         internal List<SQLTable> _sQLTables;
+
+
+        internal string newRegion = "#region ";
+        internal string endRegion = "#endregion";
         public Generator(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
             _destinationFolder = destinationFolder;
