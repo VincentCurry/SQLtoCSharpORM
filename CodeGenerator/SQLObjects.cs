@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace CodeGenerator
 {
@@ -82,7 +83,46 @@ select * from sys.columns*/
             }
             set { maximumLength = value; }
         }
-        //public in
+
+        public string RandomValue()
+        {
+                    Random random = new Random();
+            switch (DataType)
+            {
+                case SQLDataTypes.intData:
+                    byte[] buf = new byte[8];
+                    random.NextBytes(buf);
+                    long longRand = BitConverter.ToInt64(buf, 0);
+                    return Math.Abs(longRand % long.MaxValue).ToString();
+                case SQLDataTypes.varChar:
+                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
+                case SQLDataTypes.uniqueIdentifier:
+                    return new Guid().ToString();
+                case SQLDataTypes.bit:
+                    return false.ToString();
+                case SQLDataTypes.dateTime:
+                    return DateTime.Now.ToString();
+                case SQLDataTypes.varBinary:
+                    return "binary";
+                case SQLDataTypes.decimalData:
+                    return "3.1415";
+                case SQLDataTypes.binary:
+                    return "binary";
+                case SQLDataTypes.floatData:
+                    return "float";
+                case SQLDataTypes.ncharData:
+                    return "string";
+                case SQLDataTypes.charType:
+                    return "string";
+                case SQLDataTypes.timeType:
+                    return "TimeSpan";
+                default:
+                    return "random";
+            }
+
+        }
 
         public static List<SQLTableColumn> LoadColumnsForTable(string tableName, string connectionString, SQLTable parentTable, ref List<SQLTable> databaseTables)
         {

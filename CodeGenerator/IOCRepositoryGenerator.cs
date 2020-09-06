@@ -11,7 +11,6 @@ namespace CodeGenerator
         
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            string dataObjectClassIdentifier = (table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name);
 
             StringBuilder classText = new StringBuilder();
 

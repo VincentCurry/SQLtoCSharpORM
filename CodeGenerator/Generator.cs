@@ -11,6 +11,7 @@ namespace CodeGenerator
 
         internal string newRegion = "#region ";
         internal string endRegion = "#endregion";
+        internal string dataObjectClassIdentifier;
         public Generator(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
             _destinationFolder = destinationFolder;
@@ -21,7 +22,10 @@ namespace CodeGenerator
         public void GenerateClasses()
         {
             foreach (SQLTable table in _sQLTables)
+            {
+                dataObjectClassIdentifier = (table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name);
                 GenerateFilePerTable(table);
+            }
         }
 
         internal abstract void GenerateFilePerTable(SQLTable table);
