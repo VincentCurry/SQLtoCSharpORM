@@ -13,17 +13,16 @@ namespace CodeGenerator
         {
             StringBuilder repositoryText = new StringBuilder();
 
-            repositoryText.AppendLine("using System;");
             repositoryText.AppendLine("using System.Collections.Generic;");
             repositoryText.AppendLine("");
             repositoryText.AppendLine($"namespace {_nameSpace}.Repository");
             repositoryText.AppendLine("{");
-            repositoryText.AppendLine("\tpublic interface IRepository<T>");
+            repositoryText.AppendLine("\tpublic interface IRepository<T, I>");
             repositoryText.AppendLine("\t{");
             repositoryText.AppendLine("\t\tList<T> GetAll();");
-            repositoryText.AppendLine("\t\tT GetByID(Guid id);");
+            repositoryText.AppendLine("\t\tT GetByID(I id);");
             repositoryText.AppendLine("\t\tvoid Save(T item);");
-            repositoryText.AppendLine("\t\tvoid Delete(Guid id);");
+            repositoryText.AppendLine("\t\tvoid Delete(I id);");
             repositoryText.AppendLine("\t}");
             repositoryText.AppendLine("}");
 

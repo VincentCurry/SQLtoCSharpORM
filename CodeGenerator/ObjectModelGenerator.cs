@@ -98,7 +98,7 @@ namespace CodeGenerator
 
                 classText.AppendLine("List<" + table.Name + "> " + Library.LowerFirstCharacter(table.Name) + "s = new List<" + table.Name + ">();");
                 classText.AppendLine(Environment.NewLine);
-                classText.AppendLine("SqlDataReader " + Library.LowerFirstCharacter(table.Name) + "sData = SQLDataServer.ExecuteSPReturnDataReader(storedProcedure, Constants.ConnectionString, parameters);");
+                classText.AppendLine("SqlDataReader " + Library.LowerFirstCharacter(table.Name) + "sData = SQLDataServer.ExecuteSPReturnDataReader(storedProcedure, SQLDataServer.ConnectionString, parameters);");
                 classText.AppendLine("while (" + Library.LowerFirstCharacter(table.Name) + "sData.Read())"); 
                 classText.AppendLine("{");
 
@@ -194,24 +194,24 @@ namespace CodeGenerator
                         {
                             classText.AppendLine("if (this." + Library.LowerFirstCharacter(column.Name) + " == Guid.Empty)");
                             classText.AppendLine("{");
-                            classText.AppendLine("this." + Library.LowerFirstCharacter(column.Name) + " = SQLDataServer.ExecuteSPReturnGuid(\"" + table.Name + "Insert\", Constants.ConnectionString, parameters);");
+                            classText.AppendLine("this." + Library.LowerFirstCharacter(column.Name) + " = SQLDataServer.ExecuteSPReturnGuid(\"" + table.Name + "Insert\", SQLDataServer.ConnectionString, parameters);");
                             classText.AppendLine("}");
                             classText.AppendLine("else");
                             classText.AppendLine("{");
                             classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + column.Name + "\", this." + Library.LowerFirstCharacter(column.Name) + ", SqlDbType.UniqueIdentifier, 16);");
-                            classText.AppendLine("SQLDataServer.ExecuteSP(\"" + table.Name + "Update\", Constants.ConnectionString, parameters);");
+                            classText.AppendLine("SQLDataServer.ExecuteSP(\"" + table.Name + "Update\", SQLDataServer.ConnectionString, parameters);");
                             classText.AppendLine("}");
                         }
                         else
                         {
                             classText.AppendLine("if (this." + Library.LowerFirstCharacter(column.Name) + " == 0)");
                             classText.AppendLine("{");
-                            classText.AppendLine("this." + Library.LowerFirstCharacter(column.Name) + "= SQLDataServer.ExecuteSPReturnLong(\"" + table.Name + "Insert\", Constants.ConnectionString, parameters, \"@" + column.Name + "\");");
+                            classText.AppendLine("this." + Library.LowerFirstCharacter(column.Name) + "= SQLDataServer.ExecuteSPReturnLong(\"" + table.Name + "Insert\", SQLDataServer.ConnectionString, parameters, \"@" + column.Name + "\");");
                             classText.AppendLine("}");
                             classText.AppendLine("else");
                             classText.AppendLine("{");
                             classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + column.Name + "\", this." + Library.LowerFirstCharacter(column.Name) + ", SqlDbType.Int, 4);");
-                            classText.AppendLine("SQLDataServer.ExecuteSP(\"" + table.Name + "Update\", Constants.ConnectionString, parameters);");
+                            classText.AppendLine("SQLDataServer.ExecuteSP(\"" + table.Name + "Update\", SQLDataServer.ConnectionString, parameters);");
                             classText.AppendLine("}");
                         }
                     }

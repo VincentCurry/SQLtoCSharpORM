@@ -24,7 +24,7 @@ namespace CodeGenerator
 
             classText.AppendLine($"namespace {_nameSpace}.SqlRepository");
             classText.AppendLine("{");
-            classText.AppendLine($"\tpublic class {table.Name}RepositorySql : IRepository<{dataObjectClassIdentifier}>");
+            classText.AppendLine($"\tpublic class {table.Name}RepositorySql : IRepository<{dataObjectClassIdentifier}, {table.PrimaryKey.cSharpDataType}>");
             classText.AppendLine("\t{");
             classText.AppendLine("\t\t#region Loading Methods");
             classText.AppendLine($"\t\tpublic List<{dataObjectClassIdentifier}> GetAll()");
@@ -66,7 +66,7 @@ namespace CodeGenerator
 
             classText.AppendLine($"\t\t\tList<{dataObjectClassIdentifier}> {Library.LowerFirstCharacter(table.Name)}s = new List<{dataObjectClassIdentifier}>();");
             classText.AppendLine("");
-            classText.AppendLine($"\t\t\tSqlDataReader {Library.LowerFirstCharacter(table.Name)}sData = SQLDataServer.ExecuteSPReturnDataReader(storedProcedure, Constants.ConnectionString, parameters);");
+            classText.AppendLine($"\t\t\tSqlDataReader {Library.LowerFirstCharacter(table.Name)}sData = SQLDataServer.ExecuteSPReturnDataReader(storedProcedure, SQLDataServer.ConnectionString, parameters);");
             classText.AppendLine($"\t\t\twhile ({Library.LowerFirstCharacter(table.Name)}sData.Read())");
             classText.AppendLine("\t\t\t{");
 
@@ -163,7 +163,7 @@ namespace CodeGenerator
                     {
                         classText.AppendLine($"\t\t\tif ({Library.LowerFirstCharacter(table.Name)}.{column.Name} == Guid.Empty)");
                         classText.AppendLine("\t\t\t{");
-                        classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name} = SQLDataServer.ExecuteSPReturnGuid(\"{table.Name}Insert\", Constants.ConnectionString, parameters);");
+                        classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name} = SQLDataServer.ExecuteSPReturnGuid(\"{table.Name}Insert\", SQLDataServer.ConnectionString, parameters);");
                         classText.AppendLine("\t\t\t}");
                         classText.AppendLine("\t\t\telse");
                         classText.AppendLine("\t\t\t{");
@@ -175,7 +175,7 @@ namespace CodeGenerator
                     {
                         classText.AppendLine($"\t\t\tif ({Library.LowerFirstCharacter(table.Name)}.{column.Name} == 0)");
                         classText.AppendLine("\t\t\t{");
-                        classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name}= SQLDataServer.ExecuteSPReturnLong(\"{table.Name}Insert\", Constants.ConnectionString, parameters, \"@{column.Name}\");");
+                        classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name}= SQLDataServer.ExecuteSPReturnLong(\"{table.Name}Insert\", SQLDataServer.ConnectionString, parameters, \"@{column.Name}\");");
                         classText.AppendLine("\t\t\t}");
                         classText.AppendLine("\t\t\telse");
                         classText.AppendLine("\t\t\t{");
@@ -228,7 +228,7 @@ namespace CodeGenerator
 
         string ExecuteSP(string tableName, string action)
         {
-            return $"SQLDataServer.ExecuteSP(\"{tableName}{action}\", Constants.ConnectionString, parameters);";
+            return $"SQLDataServer.ExecuteSP(\"{tableName}{action}\", SQLDataServer.ConnectionString, parameters);";
 
         }
 
