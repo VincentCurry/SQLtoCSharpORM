@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace CodeGenerator
 {
 
-    public class SQLStatementGenerator
+    public class SQLStatementGenerator : Generator
     {
         List<SQLTable> tablesToGenerate;
         string go = "GO";
@@ -16,7 +17,7 @@ namespace CodeGenerator
         string setNoCount = "SET NOCOUNT ON;";
         string procedureDivider = Environment.NewLine + "--__________________________________________________" + Environment.NewLine;
 
-        public SQLStatementGenerator(List<SQLTable> tables)
+        public SQLStatementGenerator(List<SQLTable> tables) : base(tables, "", "")
         {
             tablesToGenerate = tables;
         }
@@ -38,12 +39,14 @@ namespace CodeGenerator
                 sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetAll]" + Environment.NewLine);
                 GenerateSelectStatement(table, sqlStatement);
                 sqlStatement.AppendLine("END");
+                GenerateForeignKeyStatements(table, sqlStatement);
                 GenerateInsertStatement(table, sqlStatement);
                 sqlStatement.Append(procedureDivider);
                 GenerateUpdateStatement(table, sqlStatement);
                 sqlStatement.Append(procedureDivider);
                 GenerateDeleteStatement(table, sqlStatement);
                 sqlStatement.Append(procedureDivider);
+                GenerateForeignKeyDeleteStatements(table, sqlStatement);
                 
             }
 
@@ -81,17 +84,27 @@ namespace CodeGenerator
             sqlStatement.AppendLine("");
         }
 
-       /* void GenerateForeignKeyStatements(SQLTable table, StringBuilder sqlStatement)
+        void GenerateForeignKeyStatements(SQLTable table, StringBuilder sqlStatement)
         {
-            foreach (SQLTableColumn tableColumn in table.Columns)
+            List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
+
+            foreach (SQLForeignKeyRelation foreignKey in foreignKeys)
             {
-                foreach (SQLForeignKeyRelation foreignKey in tableColumn.ForeignKeys)
-                {
-                    GenerateSelectStatement(foreignKey., sqlStatement)
-                }
+                SQLTableColumn column = foreignKey.ReferencedTableColumn;
+
+                sqlStatement.AppendLine(go);
+                sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetBy"+ column.Name + "]" + Environment.NewLine);
+                sqlStatement.Append("@" + column.Name + " " + column.DataType.ToString() + Environment.NewLine);
+                GenerateSelectStatement(table, sqlStatement);
+
+                sqlStatement.AppendLine(sqlRowIdentifier(column.Name));
+
+                sqlStatement.AppendLine(end);
+                sqlStatement.AppendLine(procedureDivider);
             }
+            
         }
-        */
+       
         void GenerateInsertStatement(SQLTable table, StringBuilder sqlStatement)
         {
             sqlStatement.AppendLine("GO");
@@ -235,9 +248,37 @@ namespace CodeGenerator
 
         }
 
+        void GenerateForeignKeyDeleteStatements(SQLTable table, StringBuilder sqlStatement)
+        {
+            List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
+
+            foreach (SQLForeignKeyRelation foreignKey in foreignKeys)
+            {
+                SQLTableColumn column = foreignKey.ReferencedTableColumn;
+
+                sqlStatement.AppendLine(go);
+                sqlStatement.AppendLine("CREATE PROCEDURE [dbo].[" + table.Name + "DeleteFor" + column.TableName + "]" + Environment.NewLine);
+
+                sqlStatement.AppendLine($"@{column.Name} {column.DataType}");
+                sqlStatement.AppendLine(sqlAs);
+                sqlStatement.AppendLine(begin);
+                sqlStatement.AppendLine(setNoCount);
+
+                sqlStatement.AppendLine($"DELETE FROM [{table.Name}]");
+                sqlStatement.AppendLine(sqlRowIdentifier(column.Name));
+
+                sqlStatement.AppendLine(end);
+            }
+        }
+
         string sqlRowIdentifier(string columnName)
         {
             return Environment.NewLine + "WHERE [" + columnName + "] = @" + columnName;
+        }
+
+        internal override void GenerateFilePerTable(SQLTable table)
+        {
+            throw new NotImplementedException();
         }
     }
 

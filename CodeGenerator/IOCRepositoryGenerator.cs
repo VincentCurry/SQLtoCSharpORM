@@ -13,22 +13,7 @@ namespace CodeGenerator
         
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            List<SQLForeignKeyRelation> foreignKeys = new List<SQLForeignKeyRelation>();
-
-            foreach (SQLTable otherTable in _sQLTables.Where(tb => tb != table))
-            {
-
-                foreach (SQLTableColumn sQLTableColumn in otherTable.Columns)
-                {
-                    foreach (SQLForeignKeyRelation foreignKeyRelation in sQLTableColumn.ForeignKeys)
-                    {
-                        if (foreignKeyRelation.ParentTableColum.TableName == table.Name)
-                        {
-                            foreignKeys.Add(foreignKeyRelation);
-                        }
-                    }
-                }
-            }
+            List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
 
             StringBuilder classText = new StringBuilder();
 
@@ -250,7 +235,7 @@ namespace CodeGenerator
                 classText.AppendLine("");
                 classText.AppendLine($"\t\t\t{AddParameter(column)}");
                 classText.AppendLine();
-                classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "DeleteFor" + column.Name)}");
+                classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "DeleteFor" + column.TableName)}");
             }
             
 
