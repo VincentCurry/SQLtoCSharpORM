@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace CodeGenerator
@@ -11,6 +13,22 @@ namespace CodeGenerator
         
         internal override void GenerateFilePerTable(SQLTable table)
         {
+            List<SQLForeignKeyRelation> foreignKeys = new List<SQLForeignKeyRelation>();
+
+            foreach (SQLTable otherTable in _sQLTables.Where(tb => tb != table))
+            {
+
+                foreach (SQLTableColumn sQLTableColumn in otherTable.Columns)
+                {
+                    foreach (SQLForeignKeyRelation foreignKeyRelation in sQLTableColumn.ForeignKeys)
+                    {
+                        if (foreignKeyRelation.ParentTableColum.TableName == table.Name)
+                        {
+                            foreignKeys.Add(foreignKeyRelation);
+                        }
+                    }
+                }
+            }
 
             StringBuilder classText = new StringBuilder();
 
@@ -49,6 +67,22 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\t\t\t\tthrow new Exception(\"Get by ID returning more than one record\");");
             classText.AppendLine("\t\t\t\t}");
             classText.AppendLine("\t\t}");
+            classText.AppendLine("");
+
+
+            foreach (SQLForeignKeyRelation foreignKeyRelation in foreignKeys)
+            {
+                SQLTableColumn column = foreignKeyRelation.ReferencedTableColumn;
+
+                classText.AppendLine($"\t\tpublic List<{dataObjectClassIdentifier}> GetBy{column.Name}({column.cSharpDataType} {Library.LowerFirstCharacter(column.Name)})");
+                classText.AppendLine("\t\t{");
+                classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
+                classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(column.Name)}, SqlDbType.{column.dotNetSqlDataTypes}, {column.MaximumLength});");
+                classText.AppendLine($"\t\t\treturn Populate{table.Name}List(\"{table.Name}GetBy{column.Name}\", parameters);");
+                classText.AppendLine("\t\t}");
+                classText.AppendLine("");
+            }
+            
 
             classText.AppendLine("");
             classText.AppendLine($"\t\tprivate List<{dataObjectClassIdentifier}> Populate{table.Name}List(string storedProcedure, List<SqlParameter> parameters)");
@@ -193,7 +227,6 @@ namespace CodeGenerator
 
             classText.AppendLine($"\t\t{newRegion}Deleting Items from the database");
 
-            //classText.AppendLine($"\t\tpublic void Delete({dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)})");
             classText.AppendLine($"\t\tpublic void Delete({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id)");
             classText.AppendLine($"\t\t{{");
             classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
@@ -203,6 +236,24 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "Delete")}");
 
             classText.AppendLine($"\t\t}}");
+            classText.AppendLine("");
+
+
+
+
+            foreach (SQLForeignKeyRelation foreignKeyRelation in foreignKeys)
+            {
+                SQLTableColumn column = foreignKeyRelation.ReferencedTableColumn;
+                classText.AppendLine($"\t\tpublic void DeleteBy{column.Name}({column.cSharpDataType} {Library.LowerFirstCharacter(column.Name)})");
+                classText.AppendLine($"\t\t{{");
+                classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
+                classText.AppendLine("");
+                classText.AppendLine($"\t\t\t{AddParameter(column)}");
+                classText.AppendLine();
+                classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "DeleteFor" + column.Name)}");
+            }
+            
+
             classText.AppendLine("\t\t" + endRegion);
 
             classText.AppendLine("\t}"); // This is the closing of the class.
