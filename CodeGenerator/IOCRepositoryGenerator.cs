@@ -233,9 +233,10 @@ namespace CodeGenerator
                 classText.AppendLine($"\t\t{{");
                 classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
                 classText.AppendLine("");
-                classText.AppendLine($"\t\t\t{AddParameter(column)}");
+                classText.AppendLine($"\t\t\t{AddParameter(Library.LowerFirstCharacter(column.Name), column)}");
                 classText.AppendLine();
                 classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "DeleteFor" + column.TableName)}");
+                classText.AppendLine($"\t\t}}");
             }
             
 
