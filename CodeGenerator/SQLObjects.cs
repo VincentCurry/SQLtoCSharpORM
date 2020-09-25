@@ -92,7 +92,7 @@ select * from sys.columns*/
                 case SQLDataTypes.intData:
                     byte[] buf = new byte[8];
                     random.NextBytes(buf);
-                    long longRand = BitConverter.ToInt64(buf, 0);
+                    long longRand = BitConverter.ToInt32(buf, 0);
                     return Math.Abs(longRand % long.MaxValue).ToString();
                 case SQLDataTypes.varChar:
                     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
