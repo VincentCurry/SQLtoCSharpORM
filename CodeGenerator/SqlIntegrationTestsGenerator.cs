@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -41,12 +42,11 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t{table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id;");
             classText.AppendLine("");
 
-            classText.AppendLine(ForeignKeyCodePrepend(table, CreateParentObjectCode));
+            classText.AppendLine(ForeignKeyCode(table, CreateParentObjectCode, prepend:true));
 
             classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Id = Create();");
             classText.AppendLine($"\t\t\tGetById({Library.LowerFirstCharacter(table.Name)}Id);");
             classText.AppendLine($"\t\t\tDelete({Library.LowerFirstCharacter(table.Name)}Id);");
-            classText.AppendLine("");
 
             classText.AppendLine(ForeignKeyCode(table, DeleteParentObjectCode));
 
@@ -195,34 +195,31 @@ namespace CodeGenerator
         }
 
         private delegate string CodeFunction(SQLTable table);
-        private string ForeignKeyCodePrepend(SQLTable table, CodeFunction codeFunction)
-        {
-            StringBuilder foreignKeyCode = new StringBuilder();
-
-            foreach (SQLForeignKeyRelation foreignKey in sQLForeignKeyRelationsForTable(table))
-            {
-                SQLTableColumn column = foreignKey.ReferencedTableColumn;
-                foreignKeyCode.Insert(0, codeFunction(column.ParentTable));
-
-                string childForeignKeyCreateFunctions = ForeignKeyCode(column.ParentTable, codeFunction);
-                if (childForeignKeyCreateFunctions != "")
-                    foreignKeyCode.Insert(0, childForeignKeyCreateFunctions + Environment.NewLine);
-            }
-
-            return foreignKeyCode.ToString();
-        }
         private string ForeignKeyCode(SQLTable table, CodeFunction codeFunction)
         {
+            return ForeignKeyCode(table, codeFunction, false);
+        }
+
+        private string ForeignKeyCode(SQLTable table, CodeFunction codeFunction, bool prepend)
+        {
             StringBuilder foreignKeyCode = new StringBuilder();
 
             foreach (SQLForeignKeyRelation foreignKey in sQLForeignKeyRelationsForTable(table))
             {
                 SQLTableColumn column = foreignKey.ReferencedTableColumn;
-                foreignKeyCode.Append(codeFunction(column.ParentTable));
+                if (prepend)
+                    foreignKeyCode.Insert(0, codeFunction(column.ParentTable) + Environment.NewLine);
+                else
+                    foreignKeyCode.Append(codeFunction(column.ParentTable) + Environment.NewLine);
 
-                string childForeignKeyCreateFunctions = ForeignKeyCode(column.ParentTable, codeFunction);
+                string childForeignKeyCreateFunctions = ForeignKeyCode(column.ParentTable, codeFunction, prepend);
                 if (childForeignKeyCreateFunctions != "")
-                    foreignKeyCode.Append(childForeignKeyCreateFunctions + Environment.NewLine);
+                {
+                    if (prepend)
+                        foreignKeyCode.Insert(0, childForeignKeyCreateFunctions);
+                    else
+                        foreignKeyCode.Append(childForeignKeyCreateFunctions);
+                }
             }
 
             return foreignKeyCode.ToString();
