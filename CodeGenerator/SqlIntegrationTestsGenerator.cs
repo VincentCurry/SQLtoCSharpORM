@@ -15,6 +15,7 @@ namespace CodeGenerator
         {
 
             StringBuilder classText = new StringBuilder();
+            List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
 
             classText.AppendLine($"using {_nameSpace}.Repository;");
             classText.AppendLine("using System;");
@@ -26,18 +27,12 @@ namespace CodeGenerator
             classText.AppendLine($"\tpublic class {table.Name}RepositoryIntegrationTest");
             classText.AppendLine($"\t{{");
 
-            foreach(SQLTableColumn column in table.Columns)
-            {
-                if (!column.PrimaryKey)
-                {
-                    if (column.DataType == SQLDataTypes.uniqueIdentifier)
-                        classText.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = Guid.NewGuid();");
-                    else
-                        classText.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = {column.RandomValue()};");
-                }
-            }
+            classText.AppendLine(ColumnParametersForTable(table));
+            classText.AppendLine(ForeignKeyCode(table, ColumnParametersForTable));
 
-            classText.AppendLine($"\t\tprivate {table.Name}RepositorySql _{Library.LowerFirstCharacter(table.Name)}Repository = new {table.Name}RepositorySql();");
+            classText.AppendLine(CreateRepository(table));
+            classText.AppendLine(ForeignKeyCode(table, CreateRepository));
+
             classText.AppendLine("");
 
             classText.AppendLine($"\t\t[Fact]");
@@ -45,33 +40,23 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t{{");
             classText.AppendLine($"\t\t\t{table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id;");
             classText.AppendLine("");
+
+            classText.AppendLine(ForeignKeyCodePrepend(table, CreateParentObjectCode));
+
             classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Id = Create();");
             classText.AppendLine($"\t\t\tGetById({Library.LowerFirstCharacter(table.Name)}Id);");
             classText.AppendLine($"\t\t\tDelete({Library.LowerFirstCharacter(table.Name)}Id);");
+            classText.AppendLine("");
+
+            classText.AppendLine(ForeignKeyCode(table, DeleteParentObjectCode));
+
             classText.AppendLine($"\t\t}}");
             classText.AppendLine("");
 
-            classText.AppendLine($"\t\tprivate {table.PrimaryKey.cSharpDataType} Create()");
-            classText.AppendLine($"\t\t{{");
-            classText.AppendLine($"\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = new {dataObjectClassIdentifier}();");
-            classText.AppendLine("");
-            foreach (SQLTableColumn columnSetValue in table.Columns)
-            {
-                if (!columnSetValue.PrimaryKey)
-                    classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}.{columnSetValue.Name} = _{Library.LowerFirstCharacter(columnSetValue.Name)};");
-            }
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\t_{Library.LowerFirstCharacter(table.Name)}Repository.Save({Library.LowerFirstCharacter(table.Name)});");
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\tConsole.WriteLine($\"{table.Name} created id:{{{Library.LowerFirstCharacter(table.Name)}.{table.Name}Id}}\");");
-            classText.AppendLine("");
+            classText.AppendLine(ForeignKeyCode(table, CreateRecordInTableFunction));
 
-            string idNotSetValue = table.PrimaryKey.cSharpDataType == "Guid" ? "Guid.Empty" : "0";
-
-            classText.AppendLine($"\t\t\tAssert.NotEqual({idNotSetValue}, {Library.LowerFirstCharacter(table.Name)}.{table.Name}Id);");
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}.{table.Name}Id;");
-            classText.AppendLine($"\t\t}}");
+            classText.AppendLine(CreateRecordInTableFunction(table, false));
+           
             classText.AppendLine("");
 
             classText.AppendLine($"\t\tprivate void GetById({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id)");
@@ -90,29 +75,8 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t}}");
             classText.AppendLine(Environment.NewLine);
 
-            classText.AppendLine($"\t\tprivate void Delete({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id)");
-            classText.AppendLine($"\t\t{{");
-            classText.AppendLine($"\t\t\tint start{table.Name}Count = _{Library.LowerFirstCharacter(table.Name)}Repository.GetAll().Count;");
-
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\t_{Library.LowerFirstCharacter(table.Name)}Repository.Delete({Library.LowerFirstCharacter(table.Name)}Id);");
-            
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = _{Library.LowerFirstCharacter(table.Name)}Repository.GetByID({Library.LowerFirstCharacter(table.Name)}Id);");
-
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\tint end{table.Name}Count = _{Library.LowerFirstCharacter(table.Name)}Repository.GetAll().Count;");
-
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\tConsole.WriteLine($\"{table.Name} deleted id: {{{Library.LowerFirstCharacter(table.Name)}Id}}\");");
-
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\tAssert.Null({Library.LowerFirstCharacter(table.Name)});");
-            classText.AppendLine($"\t\t\tAssert.Equal(end{table.Name}Count + 1, start{table.Name}Count);");
-
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t}}");
-
+            classText.AppendLine(DeleteRecordInTableFunction(table, false));
+            classText.AppendLine(ForeignKeyCode(table, DeleteRecordInTableFunction));
 
             classText.AppendLine("\t}");
             classText.AppendLine("}");
@@ -125,5 +89,145 @@ namespace CodeGenerator
 
             writer.Close();
         }
+
+        private string CreateRecordInTableFunction(SQLTable table)
+        {
+            return CreateRecordInTableFunction(table, true);
+        }
+        private string CreateRecordInTableFunction(SQLTable table, bool foreignKeyTable)
+        {
+            StringBuilder createFunction = new StringBuilder();
+
+            createFunction.AppendLine($"\t\tprivate {table.PrimaryKey.cSharpDataType} Create{(foreignKeyTable?table.Name:"")}()");
+            createFunction.AppendLine($"\t\t{{");
+            createFunction.AppendLine($"\t\t\t{(table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name)} {Library.LowerFirstCharacter(table.Name)} = new {(table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name)}();");
+            createFunction.AppendLine("");
+            foreach (SQLTableColumn columnSetValue in table.Columns)
+            {
+                if (!columnSetValue.PrimaryKey)
+                {
+                    string value =  $"_{Library.LowerFirstCharacter(columnSetValue.Name)}";
+                    createFunction.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}.{columnSetValue.Name} = {value};");
+                }
+            }
+            createFunction.AppendLine("");
+            createFunction.AppendLine($"\t\t\t_{Library.LowerFirstCharacter(table.Name)}Repository.Save({Library.LowerFirstCharacter(table.Name)});");
+            createFunction.AppendLine("");
+            createFunction.AppendLine($"\t\t\tConsole.WriteLine($\"{table.Name} created id:{{{Library.LowerFirstCharacter(table.Name)}.{table.Name}Id}}\");");
+            createFunction.AppendLine("");
+
+            string idNotSetValue = table.PrimaryKey.cSharpDataType == "Guid" ? "Guid.Empty" : "0";
+
+            createFunction.AppendLine($"\t\t\tAssert.NotEqual({idNotSetValue}, {Library.LowerFirstCharacter(table.Name)}.{table.Name}Id);");
+            createFunction.AppendLine("");
+            createFunction.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}.{table.Name}Id;");
+            createFunction.AppendLine($"\t\t}}");
+
+            return createFunction.ToString();
+        }
+
+        private string DeleteRecordInTableFunction(SQLTable table)
+        {
+            return DeleteRecordInTableFunction(table, true);
+        }
+
+        private string DeleteRecordInTableFunction(SQLTable table, bool appendTableNameToFunction)
+        {
+            StringBuilder deleteFunction = new StringBuilder();
+
+            deleteFunction.AppendLine($"\t\tprivate void Delete{(appendTableNameToFunction ? table.Name : "")}({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id)");
+            deleteFunction.AppendLine($"\t\t{{");
+            deleteFunction.AppendLine($"\t\t\tint start{table.Name}Count = _{Library.LowerFirstCharacter(table.Name)}Repository.GetAll().Count;");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t\t_{Library.LowerFirstCharacter(table.Name)}Repository.Delete({Library.LowerFirstCharacter(table.Name)}Id);");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t\t{(table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name)} {Library.LowerFirstCharacter(table.Name)} = _{Library.LowerFirstCharacter(table.Name)}Repository.GetByID({Library.LowerFirstCharacter(table.Name)}Id);");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t\tint end{table.Name}Count = _{Library.LowerFirstCharacter(table.Name)}Repository.GetAll().Count;");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t\tConsole.WriteLine($\"{table.Name} deleted id: {{{Library.LowerFirstCharacter(table.Name)}Id}}\");");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t\tAssert.Null({Library.LowerFirstCharacter(table.Name)});");
+            deleteFunction.AppendLine($"\t\t\tAssert.Equal(end{table.Name}Count + 1, start{table.Name}Count);");
+
+            deleteFunction.AppendLine("");
+            deleteFunction.AppendLine($"\t\t}}");
+
+            return deleteFunction.ToString();
+        }
+
+        private string CreateRepository(SQLTable table)
+        {
+            return $"\t\tprivate {table.Name}RepositorySql _{Library.LowerFirstCharacter(table.Name)}Repository = new {table.Name}RepositorySql();";
+        }
+
+        private string CreateParentObjectCode(SQLTable table)
+        {
+            return ($"\t\t\t_{Library.LowerFirstCharacter(table.PrimaryKey.Name)} = Create{table.Name}();");
+        }
+
+        private string DeleteParentObjectCode(SQLTable table)
+        {
+            return ($"\t\t\tDelete{table.Name}(_{Library.LowerFirstCharacter(table.PrimaryKey.Name)});");
+        }
+
+        private string ColumnParametersForTable(SQLTable table)
+        {
+            StringBuilder columnNames = new StringBuilder();
+
+            foreach (SQLTableColumn column in table.Columns)
+            {
+                if (!column.PrimaryKey)
+                {
+                    if (column.DataType == SQLDataTypes.uniqueIdentifier)
+                        columnNames.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = Guid.NewGuid();");
+                    else
+                        columnNames.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = {column.RandomValue()};");
+                }
+            }
+
+            return columnNames.ToString();
+        }
+
+        private delegate string CodeFunction(SQLTable table);
+        private string ForeignKeyCodePrepend(SQLTable table, CodeFunction codeFunction)
+        {
+            StringBuilder foreignKeyCode = new StringBuilder();
+
+            foreach (SQLForeignKeyRelation foreignKey in sQLForeignKeyRelationsForTable(table))
+            {
+                SQLTableColumn column = foreignKey.ReferencedTableColumn;
+                foreignKeyCode.Insert(0, codeFunction(column.ParentTable));
+
+                string childForeignKeyCreateFunctions = ForeignKeyCode(column.ParentTable, codeFunction);
+                if (childForeignKeyCreateFunctions != "")
+                    foreignKeyCode.Insert(0, childForeignKeyCreateFunctions + Environment.NewLine);
+            }
+
+            return foreignKeyCode.ToString();
+        }
+        private string ForeignKeyCode(SQLTable table, CodeFunction codeFunction)
+        {
+            StringBuilder foreignKeyCode = new StringBuilder();
+
+            foreach (SQLForeignKeyRelation foreignKey in sQLForeignKeyRelationsForTable(table))
+            {
+                SQLTableColumn column = foreignKey.ReferencedTableColumn;
+                foreignKeyCode.Append(codeFunction(column.ParentTable));
+
+                string childForeignKeyCreateFunctions = ForeignKeyCode(column.ParentTable, codeFunction);
+                if (childForeignKeyCreateFunctions != "")
+                    foreignKeyCode.Append(childForeignKeyCreateFunctions + Environment.NewLine);
+            }
+
+            return foreignKeyCode.ToString();
+        }
+
+
     }
 }
