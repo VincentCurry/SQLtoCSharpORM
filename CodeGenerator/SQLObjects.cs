@@ -86,7 +86,8 @@ select * from sys.columns*/
 
         public string RandomValue()
         {
-                    Random random = new Random();
+            Random random = new Random(Guid.NewGuid().GetHashCode());
+
             switch (DataType)
             {
                 case SQLDataTypes.intData:
