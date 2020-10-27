@@ -38,6 +38,7 @@ namespace CodeGenerator
         internal const string image = "image";
         internal const string charType = "char";
         internal const string timeType = "time";
+        internal const string moneyType = "money";
     }
 
     /*internal class DotNetSqlDataTypes

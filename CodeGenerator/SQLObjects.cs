@@ -1,6 +1,7 @@
 ﻿using DataServer;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -194,6 +195,8 @@ select * from sys.columns*/
                         return "string";
                     case SQLDataTypes.timeType:
                         return "TimeSpan";
+                    case SQLDataTypes.moneyType:
+                        return "decimal";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -230,6 +233,8 @@ select * from sys.columns*/
                         return "Char";
                     case SQLDataTypes.timeType:
                         return "Time";
+                    case SQLDataTypes.moneyType:
+                        return "Money";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
