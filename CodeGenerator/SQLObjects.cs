@@ -105,11 +105,11 @@ select * from sys.columns*/
                 case SQLDataTypes.bit:
                     return false.ToString();
                 case SQLDataTypes.dateTime:
-                    return DateTime.Now.ToString();
+                    return $"new DateTime({DateTime.Now.Year}, {DateTime.Now.Month}, {DateTime.Now.Day}, {DateTime.Now.Hour}, {DateTime.Now.Minute}, {DateTime.Now.Second})";
                 case SQLDataTypes.varBinary:
                     return "binary";
                 case SQLDataTypes.decimalData:
-                    return "3.1415";
+                    return "3.1415M";
                 case SQLDataTypes.binary:
                     return "binary";
                 case SQLDataTypes.floatData:
@@ -120,6 +120,8 @@ select * from sys.columns*/
                     return "string";
                 case SQLDataTypes.timeType:
                     return "TimeSpan";
+                case SQLDataTypes.moneyType:
+                    return "34.50M";
                 default:
                     return "random";
             }
