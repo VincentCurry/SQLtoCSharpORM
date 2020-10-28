@@ -1,69 +1,28 @@
 ﻿using DataServer;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
 namespace CodeGenerator
 {
-    /*select * from sys.tables
-
-select * from sys.objects
-
-select * from INFORMATION_SCHEMA.COLUMNS
-
-select * from sys.columns*/
-    public class SQLTable
-    {
-        public string Name { get; set; }
-        public int id{get;set;}
-        public List<SQLTableColumn> Columns { get; set; }
-
-        public SQLTableColumn PrimaryKey
-        {
-            get { return this.Columns[0]; }
-        }
-
-        public static List<SQLTable> LoadTables(string connectionString)
-        {
-            List<SQLTable> tables = new List<SQLTable>();
-            SqlDataReader dataReader;
-
-            dataReader= SQLDataServer.ExecuteSQLStringReturnDataReader("select name, object_id from sys.tables where name <> 'sysdiagrams' and name not like 'aspnet_%'", connectionString);
-            
-            while (dataReader.Read())
-            {
-                SQLTable table = new SQLTable();
-
-                table.Name = Convert.ToString(dataReader["name"]);
-                table.id = Convert.ToInt32(dataReader["object_id"]);
-
-                table.Columns = SQLTableColumn.LoadColumnsForTable(table.Name, connectionString, table, ref tables);
-
-                tables.Add(table);
-            }
-
-            dataReader.Close();
-
-            return tables;
-        }
-    }
-
     public class SQLTableColumn
     {
         public string Name { get; set; }
         public string TableName { get; set; }
         public int OrdinalPosition { get; set; }
         public bool Nullable { get; set; }
-        //public System.Data.SqlDbType DataType { get; set; }
-        public string DataType{get;set;}
+        public string DataType { get; set; }
+        public int NumericPrecision { get; set; }
+        public int NumericScale { get; set; }
+        public int DateTimePrecision { get; set; }
         public SQLTable ParentTable { get; set; }
         public List<SQLTable> DatabaseTables { get; set; }
         public List<SQLForeignKeyRelation> ForeignKeys { get; set; }
         public bool PrimaryKey { get; set; }
 
         private int maximumLength;
+
         public int MaximumLength
         {
             get
@@ -73,16 +32,34 @@ select * from sys.columns*/
                     case SQLDataTypes.varChar:
                         return maximumLength;
                     case SQLDataTypes.dateTime:
-                        return 8;
+                        return DateTimePrecision;
                     case SQLDataTypes.intData:
                         return 4;
                     case SQLDataTypes.uniqueIdentifier:
                         return 16;
+                    case SQLDataTypes.decimalData:
+                        return NumericPrecision;
+                    case SQLDataTypes.moneyType:
+                        return NumericPrecision;
                     default:
                         return 0;
                 }
             }
             set { maximumLength = value; }
+        }
+
+        public string SizeForSQLProcedureParameters
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.varChar)
+                    return (" (" + MaximumLength.ToString() + ")");
+
+                if (DataType == SQLDataTypes.decimalData)
+                    return($" ({NumericPrecision},{NumericScale})");
+
+                return "";
+            }
         }
 
         public string RandomValue()
@@ -134,8 +111,8 @@ select * from sys.columns*/
 
             string selectStatement;
 
-            selectStatement = "select COLUMN_NAME, TABLE_NAME, ORDINAL_POSITION, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH, DATA_TYPE from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "'";
-            
+            selectStatement = "select COLUMN_NAME, TABLE_NAME, ORDINAL_POSITION, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH, DATA_TYPE, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "'";
+
             SqlDataReader dataReader = SQLDataServer.ExecuteSQLStringReturnDataReader(selectStatement, connectionString);
 
             while (dataReader.Read())
@@ -148,6 +125,9 @@ select * from sys.columns*/
                 column.Nullable = DBBooleanValues.ReturnBooleanFromYesOrNo(dataReader["IS_NULLABLE"]);
                 column.DataType = Convert.ToString(dataReader["DATA_TYPE"]);
                 column.MaximumLength = DBNullReturnValues.Return0(dataReader["CHARACTER_MAXIMUM_LENGTH"]);
+                column.NumericPrecision = DBNullReturnValues.Return0(dataReader["NUMERIC_PRECISION"]);
+                column.NumericScale = DBNullReturnValues.Return0(dataReader["NUMERIC_SCALE"]);
+                column.DateTimePrecision = DBNullReturnValues.Return0(dataReader["DATETIME_PRECISION"]);
 
                 column.ParentTable = parentTable;
 
@@ -243,75 +223,4 @@ select * from sys.columns*/
             }
         }
     }
-
-    public class SQLForeignKeyRelation
-    {
-        public SQLTableColumn ParentTableColum
-        {
-            get { return IdentifyColumn(parentObjectID, parentColumnID); }
-        }
-        public SQLTableColumn ReferencedTableColumn { get { return IdentifyColumn(referencedObjectID, referencedColumnID); } }
-        private int parentObjectID;
-        private int parentColumnID;
-        private int referencedObjectID;
-        private int referencedColumnID;
-        public List<SQLTable> DatabaseTables;
-
-        private SQLTableColumn IdentifyColumn(int tableID, int columnID)
-        {
-            foreach (SQLTable table in DatabaseTables)
-            {
-                if (table.id == tableID)
-                {
-                    foreach (SQLTableColumn column in table.Columns)
-                        if (column.OrdinalPosition == columnID)
-                            return column;
-                }
-            }
-            return null;
-        }
-
-        public static List<SQLForeignKeyRelation> LoadForeignKeysForColumn(int tableID, int columnID, string connectionString, ref List<SQLTable> databaseTables)
-        {
-
-            List<SQLForeignKeyRelation> foreignKeys = new List<SQLForeignKeyRelation>();
-
-            string selectStatement = "Select constraint_object_id, constraint_column_id, parent_object_id, parent_column_id, referenced_object_id, referenced_column_id from sys.foreign_key_columns where referenced_object_id = " + tableID + " and referenced_column_id = " + columnID;
-
-            SqlDataReader dataReader = SQLDataServer.ExecuteSQLStringReturnDataReader(selectStatement, connectionString);
-
-            while (dataReader.Read())
-            {
-                SQLForeignKeyRelation foreignKey = new SQLForeignKeyRelation();
-
-                foreignKey.DatabaseTables = databaseTables;
-
-                foreignKey.parentObjectID = Convert.ToInt32(dataReader["parent_object_id"]);
-                foreignKey.parentColumnID = Convert.ToInt32(dataReader["parent_column_id"]);
-                foreignKey.referencedObjectID = Convert.ToInt32(dataReader["referenced_object_id"]);
-                foreignKey.referencedColumnID = Convert.ToInt32(dataReader["referenced_column_id"]);
-
-                foreignKeys.Add(foreignKey);
-            }
-
-            dataReader.Close();
-
-            return foreignKeys;
-        }
-    }
-        /*SELECT f.name AS ForeignKey, OBJECT_NAME(f.parent_object_id) AS TableName,
-    COL_NAME(fc.parent_object_id, fc.parent_column_id) AS ColumnName,
-    OBJECT_NAME (f.referenced_object_id) AS ReferenceTableName,
-    COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS ReferenceColumnName
-FROM sys.foreign_keys AS f
-INNER JOIN sys.foreign_key_columns AS fc
-ON f.OBJECT_ID = fc.constraint_object_id
-
-select * from sys.foreign_keys
-select * from sys.foreign_key_columns
-         
-         select COLUMN_NAME, TABLE_NAME, ORDINAL_POSITION, IS_NULLABLE, DATA_TYPE* from INFORMATION_SCHEMA.COLUMNS
-select * from sys.columns
-select * from sys.foreign_keys
-select * from sys.foreign_key_columns*/
 }

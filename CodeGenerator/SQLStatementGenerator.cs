@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace CodeGenerator
@@ -122,8 +121,7 @@ namespace CodeGenerator
 
                     sqlStatement.Append("@" + column.Name + " " + column.DataType.ToString());
 
-                    if (column.DataType == SQLDataTypes.varChar)
-                        sqlStatement.Append(" (" + column.MaximumLength.ToString() + ")");
+                    sqlStatement.Append(column.SizeForSQLProcedureParameters);
 
                     //set primary key integers as output parameters
                     if (column.PrimaryKey)
@@ -202,8 +200,7 @@ namespace CodeGenerator
 
                 sqlStatement.Append("@" + column.Name + " " + column.DataType.ToString());
 
-                if (column.DataType == SQLDataTypes.varChar)
-                    sqlStatement.Append(" (" + column.MaximumLength.ToString() + ")");
+                sqlStatement.Append(column.SizeForSQLProcedureParameters);
 
                 appendComma = true;
             }
