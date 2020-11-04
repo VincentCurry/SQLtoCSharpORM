@@ -1,21 +1,20 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace CodeGenerator
 {
     public class SqlIntegrationTestsGenerator : Generator
     {
+        
         public SqlIntegrationTestsGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
-        { }
+        {
+            filePrefix = "RepositoryIntegrationTest";
+        }
 
 
         internal override void GenerateFilePerTable(SQLTable table)
         {
-
-            StringBuilder classText = new StringBuilder();
             List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
 
             classText.AppendLine($"using {_nameSpace}.Repository;");
@@ -80,14 +79,6 @@ namespace CodeGenerator
 
             classText.AppendLine("\t}");
             classText.AppendLine("}");
-
-
-
-            TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}RepositoryIntegrationTest.cs");
-
-            writer.Write(classText.ToString());
-
-            writer.Close();
         }
 
         private string CreateRecordInTableFunction(SQLTable table)

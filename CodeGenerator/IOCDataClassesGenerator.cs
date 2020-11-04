@@ -8,7 +8,9 @@ namespace CodeGenerator
     public class IOCDataClassesGenerator : Generator
     {
         public IOCDataClassesGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
-        { }
+        {
+            filePrefix = "";
+        }
         public void GenerateRepositoryInterface()
         {
             StringBuilder repositoryText = new StringBuilder();
@@ -36,8 +38,6 @@ namespace CodeGenerator
 
         internal override void GenerateFilePerTable(SQLTable table)
         {
-
-            StringBuilder classText = new StringBuilder();
 
             classText.AppendLine("using System;");
             classText.AppendLine(Environment.NewLine);
@@ -70,12 +70,6 @@ namespace CodeGenerator
 
             classText.AppendLine("\t}");
             classText.AppendLine("}");
-
-            TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}.cs");
-
-            writer.Write(classText.ToString());
-
-            writer.Close();
         }
     }
 }

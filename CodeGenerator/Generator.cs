@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace CodeGenerator
 {
@@ -8,11 +10,12 @@ namespace CodeGenerator
         internal string _destinationFolder;
         internal string _nameSpace;
         internal List<SQLTable> _sQLTables;
-
+        internal StringBuilder classText;
 
         internal string newRegion = "#region ";
         internal string endRegion = "#endregion";
         internal string dataObjectClassIdentifier;
+        internal string filePrefix;
         public Generator(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
             _destinationFolder = destinationFolder;
@@ -25,7 +28,15 @@ namespace CodeGenerator
             foreach (SQLTable table in _sQLTables)
             {
                 dataObjectClassIdentifier = (table.Name == _nameSpace ? $"Repository.{table.Name}" : table.Name);
+
+                classText = new StringBuilder();
                 GenerateFilePerTable(table);
+                
+                TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}{filePrefix}.cs");
+
+                writer.Write(classText.ToString());
+
+                writer.Close();
             }
         }
 
@@ -51,6 +62,11 @@ namespace CodeGenerator
             }
 
             return foreignKeys;
+        }
+
+        internal string ClassName(string tableName)
+        {
+            return (tableName == _nameSpace ? $"Repository.{tableName}" : tableName);
         }
     }
 }

@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MvcApiControllerGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="IOCDataClassesGenerator.cs" />

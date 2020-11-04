@@ -1,21 +1,17 @@
 ﻿using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace CodeGenerator
 {
     public class IOCRepositoryGenerator : Generator
     {
         public IOCRepositoryGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
-        { }
+        {
+            filePrefix = "RepositorySql";
+        }
         
         internal override void GenerateFilePerTable(SQLTable table)
         {
             List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
-
-            StringBuilder classText = new StringBuilder();
 
             classText.AppendLine("using DataServer;");
             classText.AppendLine("using System;");
@@ -248,11 +244,6 @@ namespace CodeGenerator
             classText.AppendLine("\t}"); // This is the closing of the class.
             classText.AppendLine("}"); // This is the closing of the namespace.
 
-            TextWriter writer = File.CreateText($"{_destinationFolder + table.Name}RepositorySql.cs");
-
-            writer.Write(classText.ToString());
-
-            writer.Close();
         }
 
         string AddParameter(SQLTableColumn column)
