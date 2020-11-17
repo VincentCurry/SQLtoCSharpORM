@@ -1,6 +1,7 @@
 ﻿using DataServer;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -220,6 +221,29 @@ namespace CodeGenerator
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
+            }
+        }
+
+        public string htmlInputFormType
+        {
+            get
+            {
+                return DataType switch
+                {
+                    SQLDataTypes.intData => htmlFormValueType.number,
+                    SQLDataTypes.varChar => htmlFormValueType.text,
+                    SQLDataTypes.uniqueIdentifier=> htmlFormValueType.text,
+                    SQLDataTypes.bit=> htmlFormValueType.checkbox,
+                    SQLDataTypes.dateTime=> htmlFormValueType.number,                    
+                    SQLDataTypes.varBinary=> htmlFormValueType.text,                  
+                    SQLDataTypes.decimalData=> htmlFormValueType.number,                       
+                    SQLDataTypes.binary=> htmlFormValueType.number,                     
+                    SQLDataTypes.floatData=> htmlFormValueType.number,                        
+                    SQLDataTypes.ncharData=> htmlFormValueType.text,                       
+                    SQLDataTypes.charType=> htmlFormValueType.text,                       
+                    SQLDataTypes.timeType=> htmlFormValueType.number,                        
+                    SQLDataTypes.moneyType=> htmlFormValueType.number
+                };
             }
         }
     }

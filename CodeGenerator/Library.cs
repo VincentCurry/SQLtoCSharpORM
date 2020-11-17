@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.CSharp.RuntimeBinder;
+using System;
+using System.Data;
 
 namespace CodeGenerator
 {
@@ -51,7 +53,12 @@ namespace CodeGenerator
         internal const string decimalData = "decimal";
         internal const string varBinary = "varbinary";
     }*/
-  
+  internal class htmlFormValueType
+    {
+        internal const string text = "text";
+        internal const string number = "number";
+        internal const string checkbox = "checkbox";
+    }
 
     public class SQLDBTypeNotSupported : Exception
     {

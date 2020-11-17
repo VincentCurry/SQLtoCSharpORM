@@ -16,6 +16,7 @@ namespace CodeGenerator
         internal string endRegion = "#endregion";
         internal string dataObjectClassIdentifier;
         internal string filePrefix;
+        internal string fileSuffix = "cs";
         public Generator(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
             _destinationFolder = destinationFolder;
@@ -32,7 +33,7 @@ namespace CodeGenerator
                 classText = new StringBuilder();
                 GenerateFilePerTable(table);
                 
-                TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}{filePrefix}.cs");
+                TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}{filePrefix}.{fileSuffix}");
 
                 writer.Write(classText.ToString());
 
