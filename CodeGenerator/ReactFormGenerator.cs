@@ -44,11 +44,15 @@ namespace CodeGenerator
 
             classText.AppendLine("\thandleSubmit = (event) => {");
             classText.AppendLine("");
-            classText.AppendLine($"\t\talert('A {Library.LowerFirstCharacter(table.Name)} was submitted: ' + this.state);");
+            classText.AppendLine($"\t\tvar {Library.LowerFirstCharacter(table.Name)} {{");
+            classText.AppendLine(TableColumnsCode(table, CreateClassCode));
+            classText.Length -= removeLastCommaAndCarriagReturn;
+            classText.AppendLine("");
+            classText.AppendLine("\t\t}");
 
-            classText.AppendLine($"\t\tfetch('https://localhost:44340/api/{Library.LowerFirstCharacter(table.Name)}', {{");
+            classText.AppendLine($"\t\tfetch(process.env.REACT_APP_API_ENDPOINT + '{Library.LowerFirstCharacter(table.Name)}', {{");
             classText.AppendLine($"\t\t\tmethod: 'POST',");
-            classText.AppendLine($"\t\t\tbody: JSON.stringify(this.state),");
+            classText.AppendLine($"\t\t\tbody: JSON.stringify({Library.LowerFirstCharacter(table.Name)}),");
             classText.AppendLine($"\t\t\theaders: {{");
             classText.AppendLine($"\t\t\t\t'Content-Type': 'application/json'");
             classText.AppendLine($"\t\t\t}}");
@@ -97,6 +101,12 @@ namespace CodeGenerator
         {
             return $"\t\t\t{Library.LowerFirstCharacter(column.Name)}: {(column.htmlInputFormType==htmlFormValueType.text ? "''" : "null")},";
         }
+
+        private string CreateClassCode(SQLTableColumn column)
+        {
+            return $"\t\t\t{Library.LowerFirstCharacter(column.Name)}: this.state.{Library.LowerFirstCharacter(column.Name)},";
+        }
+
         private string TableColumnsCode(SQLTable table, CodeForColumn codeFunction)
         {
             StringBuilder columnsCode = new StringBuilder();
