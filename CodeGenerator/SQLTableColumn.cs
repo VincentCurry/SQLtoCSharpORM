@@ -234,7 +234,7 @@ namespace CodeGenerator
                     SQLDataTypes.varChar => htmlFormValueType.text,
                     SQLDataTypes.uniqueIdentifier=> htmlFormValueType.text,
                     SQLDataTypes.bit=> htmlFormValueType.checkbox,
-                    SQLDataTypes.dateTime=> htmlFormValueType.number,                    
+                    SQLDataTypes.dateTime=> htmlFormValueType.datetimeLocal,                    
                     SQLDataTypes.varBinary=> htmlFormValueType.text,                  
                     SQLDataTypes.decimalData=> htmlFormValueType.number,                       
                     SQLDataTypes.binary=> htmlFormValueType.number,                     

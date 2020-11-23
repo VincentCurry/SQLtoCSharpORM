@@ -58,6 +58,13 @@ namespace CodeGenerator
         internal const string text = "text";
         internal const string number = "number";
         internal const string checkbox = "checkbox";
+        internal const string colour = "color";
+        internal const string date = "date";
+        internal const string datetimeLocal = "datetime-local";
+        internal const string email = "email";
+        internal const string file = "file";
+        internal const string hidden = "hidden";
+        internal const string time = "time";
     }
 
     public class SQLDBTypeNotSupported : Exception
