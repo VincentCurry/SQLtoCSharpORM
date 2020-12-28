@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidDataClassGenerator.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
     <Compile Include="ReactFormGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />

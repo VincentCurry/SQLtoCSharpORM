@@ -1,6 +1,8 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace CodeGenerator
 {
@@ -19,6 +21,22 @@ namespace CodeGenerator
             {
                 if(potentialReturn==keyword)
                     return "@" + potentialReturn;
+            }
+
+            return potentialReturn;
+        }
+
+        internal static string LowerFirstCharacterAndAddUnderscoreToFurtherCapitals(string stringToBeDecapitalised)
+        {
+
+            string newFirstCharacter = stringToBeDecapitalised.Substring(0, 1).ToLower();
+            string potentialReturn = newFirstCharacter + stringToBeDecapitalised.Substring(1);
+
+            IEnumerable<char> capitalLetters = potentialReturn.Where(c => c >= 'A' && c <= 'Z');
+
+            foreach(char capital in capitalLetters)
+            {
+               potentialReturn = potentialReturn.Replace(capital.ToString(), "_" + capital.ToString().ToLower());
             }
 
             return potentialReturn;
@@ -53,7 +71,7 @@ namespace CodeGenerator
         internal const string decimalData = "decimal";
         internal const string varBinary = "varbinary";
     }*/
-  internal class htmlFormValueType
+    internal class htmlFormValueType
     {
         internal const string text = "text";
         internal const string number = "number";
@@ -65,6 +83,16 @@ namespace CodeGenerator
         internal const string file = "file";
         internal const string hidden = "hidden";
         internal const string time = "time";
+    }
+
+    internal class kotlinDataTypes
+    {
+        internal const string strings = "String";
+        internal const string date = "Date";
+        internal const string doubleNum = "Double";
+        internal const string integer = "Int";
+        internal const string boolean = "Boolean";
+        internal const string floatNum = "Float";
     }
 
     public class SQLDBTypeNotSupported : Exception

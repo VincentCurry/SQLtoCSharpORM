@@ -24,6 +24,13 @@ namespace CodeGenerator
             _nameSpace = nameSpace;
         }
 
+        public Generator(List<SQLTable> tables, string destinationFolder)
+        {
+            _destinationFolder = destinationFolder;
+            _sQLTables = tables;
+            _nameSpace = "NOTUSED";
+        }
+
         public void GenerateClasses()
         {
             foreach (SQLTable table in _sQLTables)

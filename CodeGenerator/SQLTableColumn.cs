@@ -246,5 +246,28 @@ namespace CodeGenerator
                 };
             }
         }
+
+        public string kotlinDataType
+        {
+            get
+            {
+                return DataType switch
+                {
+                    SQLDataTypes.intData => kotlinDataTypes.integer,
+                    SQLDataTypes.varChar => kotlinDataTypes.strings,
+                    SQLDataTypes.uniqueIdentifier => kotlinDataTypes.strings,
+                    SQLDataTypes.bit => kotlinDataTypes.boolean,
+                    SQLDataTypes.dateTime => kotlinDataTypes.date,
+                    SQLDataTypes.varBinary => kotlinDataTypes.strings,
+                    SQLDataTypes.decimalData => kotlinDataTypes.doubleNum,
+                    SQLDataTypes.binary => kotlinDataTypes.integer,
+                    SQLDataTypes.floatData => kotlinDataTypes.floatNum,
+                    SQLDataTypes.ncharData => kotlinDataTypes.strings,
+                    SQLDataTypes.charType => kotlinDataTypes.strings,
+                    SQLDataTypes.timeType => kotlinDataTypes.date,
+                    SQLDataTypes.moneyType => kotlinDataTypes.floatNum
+                };
+            }
+        }
     }
 }
