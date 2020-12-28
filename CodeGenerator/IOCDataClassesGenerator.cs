@@ -40,6 +40,7 @@ namespace CodeGenerator
         {
 
             classText.AppendLine("using System;");
+            classText.AppendLine("using System.ComponentModel.DataAnnotations;");
             classText.AppendLine(Environment.NewLine);
 
             classText.AppendLine($"namespace {_nameSpace}.Repository");
@@ -65,7 +66,13 @@ namespace CodeGenerator
 
             foreach (SQLTableColumn column in table.Columns)
             {
-                classText.AppendLine($"\t\tpublic {column.cSharpDataType} {column.Name} {{ get; set; }}");
+                if (!column.Nullable && !column.PrimaryKey)
+                    classText.AppendLine($"\t\t[Required(ErrorMessage= \"{column.Name} is required\")]");
+
+                if (column.cSharpDataType == "string")
+                    classText.AppendLine($"\t\t[MaxLength(length:{column.MaximumLength}, ErrorMessage = \"{column.Name} cannot be longer than {column.MaximumLength} characters\")]");
+
+                classText.AppendLine($"\t\tpublic {column.cSharpDataType}{(column.Nullable && column.cSharpDataType != "string" ? "?" : "")} {column.Name} {{ get; set; }}");
             }
 
             classText.AppendLine("\t}");

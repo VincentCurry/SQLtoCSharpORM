@@ -93,6 +93,13 @@ namespace CodeGenerator
             {
                 if (!column.PrimaryKey)
                 {
+                    if (column.Nullable)
+                    {
+                        classText.AppendLine("");
+                        classText.AppendLine($"\t\t\t\tif ({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"] != DBNull.Value)");
+                        classText.Append("\t");
+                    }
+
                     classText.Append($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name} = ");
 
                     string dataReaderReadStatement;
@@ -143,6 +150,9 @@ namespace CodeGenerator
                     }
 
                     classText.AppendLine(dataReaderReadStatement);
+
+                    if (column.Nullable)
+                        classText.AppendLine("");
                 }
             }
             classText.AppendLine("");
@@ -232,7 +242,7 @@ namespace CodeGenerator
                 classText.AppendLine($"\t\t{{");
                 classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
                 classText.AppendLine("");
-                classText.AppendLine($"\t\t\t{AddParameter(Library.LowerFirstCharacter(column.Name), column)}");
+                classText.AppendLine($"\t\t\t{AddParameter(column)}");
                 classText.AppendLine();
                 classText.AppendLine($"\t\t\t{ExecuteSP(table.Name.ToString(), "DeleteFor" + column.TableName)}");
                 classText.AppendLine($"\t\t}}");
