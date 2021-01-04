@@ -30,9 +30,9 @@ namespace CodeGenerator
             classText.AppendLine("\tconstructor(props) {");
             classText.AppendLine("\t\tsuper(props)");
             classText.AppendLine($"\t\tthis.state = {{");
-            classText.AppendLine(TableColumnsCode(table, CreateStateCode));
+            classText.Append(TableColumnsCode(table, CreateStateCode));
             classText.Append(ForeignKeysCode(foreignKeys, StateLookupStorage));
-            classText.Append("\t\t\tloading: true");
+            classText.AppendLine("\t\t\tloading: true");
             
             classText.AppendLine("\t\t};");
 
