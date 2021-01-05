@@ -46,7 +46,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidDataAccessObjectGenerator.cs" />
+    <Compile Include="AndroidDatabaseGenerator.cs" />
     <Compile Include="AndroidDataClassGenerator.cs" />
+    <Compile Include="AndroidRepositoryGenerator.cs" />
+    <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
     <Compile Include="ReactFormGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />

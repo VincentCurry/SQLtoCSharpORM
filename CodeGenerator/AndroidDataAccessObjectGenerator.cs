@@ -7,7 +7,10 @@ namespace CodeGenerator
     {
 
         public AndroidDataAccessObjectGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
-        { }
+        {
+            fileSuffix = "kt";
+            filePrefix = "Dao";
+        }
         internal override void GenerateFilePerTable(SQLTable table)
         {
             string className = table.Name;
@@ -29,19 +32,15 @@ namespace CodeGenerator
             classText.AppendLine($"\t@Query(\"SELECT * FROM {className}\")");
             classText.AppendLine($"\tfun getAll(): Flow<List<{className}>>");
 
-            classText.AppendLine(Environment.NewLine);
             classText.AppendLine($"\t@Query(\"SELECT * FROM {className} WHERE {primaryKey} = :{primaryKey}\")");
             classText.AppendLine($"\tfun getById({primaryKey}: String): Flow<{className}>");
 
-            classText.AppendLine(Environment.NewLine);
             classText.AppendLine("\t@Insert");
             classText.AppendLine($"\tsuspend fun insertAll(vararg {objectName}s: {className})");
 
-            classText.AppendLine(Environment.NewLine);
             classText.AppendLine("\t@Insert");
             classText.AppendLine($"\tsuspend fun insert(vararg {objectName}: {className})");
 
-            classText.AppendLine(Environment.NewLine);
             classText.AppendLine("\t@Delete");
             classText.AppendLine($"\tsuspend fun delete({objectName}: {className})");
             classText.AppendLine("}");
