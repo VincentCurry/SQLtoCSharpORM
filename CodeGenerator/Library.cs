@@ -95,6 +95,16 @@ namespace CodeGenerator
         internal const string floatNum = "Float";
     }
 
+    internal class iosDataTypes
+    {
+        internal const string strings = "String";
+        internal const string date = "Date";
+        internal const string doubleNum = "Double";
+        internal const string integer = "Int";
+        internal const string boolean = "Bool";
+        internal const string floatNum = "Float";
+    }
+
     public class SQLDBTypeNotSupported : Exception
     {
         string dataType;

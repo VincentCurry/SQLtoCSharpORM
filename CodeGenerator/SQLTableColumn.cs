@@ -269,5 +269,28 @@ namespace CodeGenerator
                 };
             }
         }
+
+        public string iosDataType
+        {
+            get
+            {
+                return DataType switch
+                {
+                    SQLDataTypes.intData => iosDataTypes.integer,
+                    SQLDataTypes.varChar => iosDataTypes.strings,
+                    SQLDataTypes.uniqueIdentifier => iosDataTypes.strings,
+                    SQLDataTypes.bit => iosDataTypes.boolean,
+                    SQLDataTypes.dateTime => iosDataTypes.date,
+                    SQLDataTypes.varBinary => iosDataTypes.strings,
+                    SQLDataTypes.decimalData => iosDataTypes.doubleNum,
+                    SQLDataTypes.binary => iosDataTypes.integer,
+                    SQLDataTypes.floatData => iosDataTypes.floatNum,
+                    SQLDataTypes.ncharData => iosDataTypes.strings,
+                    SQLDataTypes.charType => iosDataTypes.strings,
+                    SQLDataTypes.timeType => iosDataTypes.date,
+                    SQLDataTypes.moneyType => iosDataTypes.floatNum
+                };
+            }
+        }
     }
 }
