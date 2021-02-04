@@ -17,7 +17,14 @@ namespace CodeGenerator
 
             foreach(SQLTableColumn column in table.Columns)
             {
-                classText.AppendLine($"\tlet {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}");
+                if (column.PrimaryKey)
+                {
+                    classText.AppendLine($"\tvar id: {column.iosDataType} {{ {Library.LowerFirstCharacter(column.Name)} }}");
+                }
+                else
+                {
+                    classText.AppendLine($"\tvar {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}");
+                }
             }
 
             classText.AppendLine($"}}");
