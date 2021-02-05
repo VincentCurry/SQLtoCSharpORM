@@ -12,7 +12,7 @@ namespace CodeGenerator
         {
             classText.AppendLine($"import Foundation");
 
-            classText.AppendLine($"struct Location : Decodable, Identifiable");
+            classText.AppendLine($"struct {table.Name} : Decodable, Identifiable");
             classText.AppendLine($" {{");
 
             foreach(SQLTableColumn column in table.Columns)
@@ -21,10 +21,9 @@ namespace CodeGenerator
                 {
                     classText.AppendLine($"\tvar id: {column.iosDataType} {{ {Library.LowerFirstCharacter(column.Name)} }}");
                 }
-                else
-                {
-                    classText.AppendLine($"\tvar {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}");
-                }
+
+                classText.AppendLine($"\tvar {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}");
+                
             }
 
             classText.AppendLine($"}}");
