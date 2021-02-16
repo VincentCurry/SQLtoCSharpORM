@@ -54,6 +54,7 @@ namespace CodeGenerator
         internal const string varBinary = "varbinary";
         internal const string binary = "binary";
         internal const string floatData = "float";
+        internal const string doubleData = "double";
         internal const string ncharData = "nchar";
         internal const string image = "image";
         internal const string charType = "char";
@@ -100,9 +101,18 @@ namespace CodeGenerator
         internal const string strings = "String";
         internal const string date = "Date";
         internal const string doubleNum = "Double";
-        internal const string integer = "Int";
+        internal const string integer = "Int32";
         internal const string boolean = "Bool";
         internal const string floatNum = "Float";
+    }
+
+    internal class sqlLiteStorageDataTypes
+    {
+        internal const string nullStore = "NULL";
+        internal const string intStore = "INTEGER";
+        internal const string floatStore = "REAL";
+        internal const string textStore = "TEXT";
+        internal const string blobStore = "BLOB";
     }
 
     public class SQLDBTypeNotSupported : Exception

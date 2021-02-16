@@ -63,7 +63,9 @@
     <Compile Include="SQLForeignKeyRelation.cs" />
     <Compile Include="SQLTable.cs" />
     <Compile Include="SQLTableColumn.cs" />
+    <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
+    <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
