@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CodeGenerator
 {
-    public class AndroidDataClassGenerator : Generator
+    public class AndroidDataClassGenerator : GeneratorFromForeignKeys
     {
         const int removeLastCommaAndCarriageReturn = 3;
         public AndroidDataClassGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
@@ -13,7 +13,7 @@ namespace CodeGenerator
         }
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            classText.AppendLine($"package com.example.{Library.LowerFirstCharacter(_nameSpace)}");
+            classText.AppendLine($"package com.example.{Library.LowerFirstCharacter(_nameSpace)}.entities");
             classText.AppendLine(Environment.NewLine);
 
             classText.AppendLine("import androidx.room.ColumnInfo");
@@ -41,6 +41,31 @@ namespace CodeGenerator
             classText.AppendLine("");
 
             classText.AppendLine(")");
+        }
+
+        
+        internal override void GenerateFilePerForeignKey(SQLForeignKeyRelation foreignKeyRelation, string className)
+        {
+
+            classText.AppendLine($"package com.example.{Library.LowerFirstCharacter(_nameSpace)}.entities");
+                    classText.AppendLine(Environment.NewLine);
+
+                    classText.AppendLine($"import androidx.room.Embedded");
+                    classText.AppendLine($"import androidx.room.Relation");
+                    classText.AppendLine($"import com.example.receipt.{foreignKeyRelation.ReferencedTableColumn.TableName}");
+                    classText.AppendLine($"import com.example.receipt.{foreignKeyRelation.ParentTableColum.TableName}");
+                    classText.AppendLine(Environment.NewLine);
+            
+                    classText.AppendLine($"data class {className} (");
+                    classText.AppendLine($"\t@Embedded val {Library.LowerFirstCharacter(foreignKeyRelation.ReferencedTableColumn.TableName)}: {foreignKeyRelation.ReferencedTableColumn.TableName},");
+
+                    classText.AppendLine($"\t@Relation(");
+
+                    classText.AppendLine($"\t\tparentColumn = \"{Library.LowerFirstCharacter(foreignKeyRelation.ReferencedTableColumn.Name)}\",");
+                    classText.AppendLine($"\t\tentityColumn = \"{Library.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals(foreignKeyRelation.ParentTableColum.Name)}\"");
+                    classText.AppendLine($"\t)");
+                    classText.AppendLine($"\tval {Library.LowerFirstCharacter(foreignKeyRelation.ParentTableColum.TableName)}: List <{foreignKeyRelation.ParentTableColum.TableName}>");
+                    classText.AppendLine($")");
         }
     }
 }
