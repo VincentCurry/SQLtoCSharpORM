@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DataServer">
@@ -43,11 +45,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeGenerator.cs" />
+    <Compile Include="AndroidDataAccessObjectGenerator.cs" />
+    <Compile Include="AndroidDatabaseGenerator.cs" />
+    <Compile Include="AndroidDataClassGenerator.cs" />
+    <Compile Include="AndroidRepositoryGenerator.cs" />
+    <Compile Include="AndroidViewModelGenerator.cs" />
+    <Compile Include="GeneratorFromForeignKeys.cs" />
+    <Compile Include="MvcApiControllerGenerator.cs" />
+    <Compile Include="ReactFormGenerator.cs" />
+    <Compile Include="SQLStatementGenerator.cs" />
+    <Compile Include="Generator.cs" />
+    <Compile Include="IOCDataClassesGenerator.cs" />
+    <Compile Include="IOCRepositoryGenerator.cs" />
     <Compile Include="Library.cs" />
     <Compile Include="ObjectModelGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SQLObjects.cs" />
+    <Compile Include="SqlIntegrationTestsGenerator.cs" />
+    <Compile Include="SQLForeignKeyRelation.cs" />
+    <Compile Include="SQLTable.cs" />
+    <Compile Include="SQLTableColumn.cs" />
+    <Compile Include="SwiftDataBaseGenerator.cs" />
+    <Compile Include="SwiftDataItemGenerator.cs" />
+    <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
