@@ -59,5 +59,10 @@ namespace CodeGenerator
 
             return foreignKeys;
         }
+
+        public string AndroidClassName
+        { 
+            get { return $"{this.ReferencedTableColumn.TableName}With{this.ParentTableColum.TableName}s"; } 
+        }
     }
 }

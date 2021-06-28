@@ -2,29 +2,47 @@
 
 namespace CodeGenerator
 {
-    public class AndroidViewModelGenerator : Generator
+    public class AndroidViewModelGenerator : GeneratorFromForeignKeys
     {
         public AndroidViewModelGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "kt";
             filePrefix = "ViewModel";
         }
+
+        internal override void GenerateFilePerForeignKey(SQLForeignKeyRelation foreignKeyRelation, string className)
+        {
+            GenerateFile(className, Library.LowerFirstCharacter(className), false);
+        }
+
         internal override void GenerateFilePerTable(SQLTable table)
         {
             string className = table.Name;
             string objectName = Library.LowerFirstCharacter(table.Name);
 
-            classText.AppendLine($"package com.example.{Library.LowerFirstCharacter(_nameSpace)}");
+            GenerateFile(className, objectName, true);
+        }
+
+        private void GenerateFile(string className, string objectName, bool includeInsert)
+        { 
+            classText.AppendLine($"package com.example.{Library.LowerFirstCharacter(_nameSpace)}.viewmodels");
 
             classText.AppendLine($"import androidx.lifecycle.* ");
-            classText.AppendLine($"import kotlinx.coroutines.launch");
+
+            classText.AppendLine($"import com.example.{Library.LowerFirstCharacter(_nameSpace)}.entities.{className}");
+            classText.AppendLine($"import com.example.{Library.LowerFirstCharacter(_nameSpace)}.database.{_nameSpace}Repository");
+
+            if (includeInsert)
+                classText.AppendLine($"import kotlinx.coroutines.launch");
 
             classText.AppendLine($"class {className}ViewModel (private val repository: {_nameSpace}Repository) : ViewModel(){{");
 
 
             classText.AppendLine($"\tval all{className}s:LiveData<List<{className}>> = repository.all{className}s.asLiveData()");
 
-            classText.AppendLine($"\tfun insert({objectName}: {className}) = viewModelScope.launch{{");
+            if (includeInsert)
+                classText.AppendLine($"\tfun insert({objectName}: {className}) = viewModelScope.launch{{");
+
             classText.AppendLine($"\t\trepository.insert({objectName})");
             classText.AppendLine($"\t}}");
             classText.AppendLine($"}}");

@@ -50,6 +50,7 @@
     <Compile Include="AndroidDataClassGenerator.cs" />
     <Compile Include="AndroidRepositoryGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
+    <Compile Include="GeneratorFromForeignKeys.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
     <Compile Include="ReactFormGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />
@@ -63,6 +64,9 @@
     <Compile Include="SQLForeignKeyRelation.cs" />
     <Compile Include="SQLTable.cs" />
     <Compile Include="SQLTableColumn.cs" />
+    <Compile Include="SwiftDataBaseGenerator.cs" />
+    <Compile Include="SwiftDataItemGenerator.cs" />
+    <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

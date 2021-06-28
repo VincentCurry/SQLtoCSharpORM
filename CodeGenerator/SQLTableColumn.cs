@@ -269,5 +269,68 @@ namespace CodeGenerator
                 };
             }
         }
+
+        public string iosDataType
+        {
+            get
+            {
+                return DataType switch
+                {
+                    SQLDataTypes.intData => iosDataTypes.integer,
+                    SQLDataTypes.varChar => iosDataTypes.strings,
+                    SQLDataTypes.uniqueIdentifier => iosDataTypes.strings,
+                    SQLDataTypes.bit => iosDataTypes.boolean,
+                    SQLDataTypes.dateTime => iosDataTypes.date,
+                    SQLDataTypes.varBinary => iosDataTypes.strings,
+                    SQLDataTypes.decimalData => iosDataTypes.doubleNum,
+                    SQLDataTypes.binary => iosDataTypes.integer,
+                    SQLDataTypes.floatData => iosDataTypes.floatNum,
+                    SQLDataTypes.ncharData => iosDataTypes.strings,
+                    SQLDataTypes.charType => iosDataTypes.strings,
+                    SQLDataTypes.timeType => iosDataTypes.date,
+                    SQLDataTypes.moneyType => iosDataTypes.floatNum
+                };
+            }
+        }
+
+        public string sqlLiteDataType
+        {
+            get
+            {
+
+                string[] blobTypes = { "binary", "blob", "varbinary" };
+                string[] textTypes = { "char", "charater", "clob", "national varying character", "native character", "nchar", "nvarchar", "text", "uniqueidentifier", "varchar", "variant", "varying character" };
+                string[] dateTypes = { "date", "datetime", "time", "timestamp" };
+                string[] intTypes = { "bigint", "bit", "bool", "boolean", "int", "int2", "int8", "integer", "mediumint", "smallint", "tinyint" };
+                string[] nullTypes = { "null" };
+                string[] realTypes = { "decimal", "double", "double precision", "float", "numeric", "real", "money" };
+
+                if (blobTypes.Contains(DataType))
+                    return sqlLiteStorageDataTypes.blobStore;
+                if (textTypes.Contains(DataType))
+                    return sqlLiteStorageDataTypes.textStore;
+                if (dateTypes.Contains(DataType))
+                    return sqlLiteStorageDataTypes.floatStore;
+                if (intTypes.Contains(DataType))
+                    return sqlLiteStorageDataTypes.intStore;
+                if (realTypes.Contains(DataType))
+                    return sqlLiteStorageDataTypes.floatStore;
+
+                return sqlLiteStorageDataTypes.nullStore;
+
+            }
+        }
+
+        public string sqlLiteBindType
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.intData || DataType == SQLDataTypes.bit)
+                    return "int";
+                else
+                    return "text";
+            }
+        }
+
     }
 }
