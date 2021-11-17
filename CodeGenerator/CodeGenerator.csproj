@@ -52,6 +52,7 @@
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
+    <Compile Include="MvcApiControllerTestsGenerator.cs" />
     <Compile Include="ReactFormGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />
     <Compile Include="Generator.cs" />
