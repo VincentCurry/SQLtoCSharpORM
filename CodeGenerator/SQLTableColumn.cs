@@ -81,7 +81,7 @@ namespace CodeGenerator
                 case SQLDataTypes.uniqueIdentifier:
                     return new Guid().ToString();
                 case SQLDataTypes.bit:
-                    return false.ToString();
+                    return "false";
                 case SQLDataTypes.dateTime:
                     return $"new DateTime({DateTime.Now.Year}, {DateTime.Now.Month}, {DateTime.Now.Day}, {DateTime.Now.Hour}, {DateTime.Now.Minute}, {DateTime.Now.Second})";
                 case SQLDataTypes.varBinary:
