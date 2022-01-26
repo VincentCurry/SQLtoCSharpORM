@@ -43,6 +43,23 @@ namespace CodeGenerator
             classText.AppendLine("\tcomponentDidMount() {");
 
             classText.AppendLine(ForeignKeysCode(foreignKeys, GetLookupData));
+
+            if (table.Columns.Where(co => co.DataType == SQLDataTypes.dateTime).Count() > 0)// there are dates in the selecction
+            {
+                classText.AppendLine($"\t\tvar tzoffset = (new Date()).getTimezoneOffset() * 60000;");
+                classText.AppendLine($"\t\tvar localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);");
+                classText.AppendLine($"\t\tvar localISOTimeWithoutSeconds = localISOTime.slice(0, 16);");
+                classText.AppendLine("");
+
+                foreach (SQLTableColumn column in table.Columns)
+                {
+                    if (column.DataType == SQLDataTypes.dateTime)
+                    {
+                        classText.AppendLine($"\t\tvar dtl{column.Name} = document.querySelector('input[name=\"{Library.LowerFirstCharacter(column.Name)}\"]');");
+                        classText.AppendLine($"\t\tdtl{column.Name}.value = localISOTimeWithoutSeconds;");
+                    }
+                }
+            }
             classText.AppendLine("\t}");
             classText.AppendLine("");
 
