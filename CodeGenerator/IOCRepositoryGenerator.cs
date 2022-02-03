@@ -23,7 +23,7 @@ namespace CodeGenerator
 
             classText.AppendLine($"namespace {_nameSpace}.SqlRepository");
             classText.AppendLine("{");
-            classText.AppendLine($"\tpublic class {table.Name}RepositorySql : IRepository<{dataObjectClassIdentifier}, {table.PrimaryKey.cSharpDataType}>");
+            classText.AppendLine($"\tpublic partial class {table.Name}RepositorySql : IRepository<{dataObjectClassIdentifier}, {table.PrimaryKey.cSharpDataType}>");
             classText.AppendLine("\t{");
             classText.AppendLine("\t\t#region Loading Methods");
             classText.AppendLine($"\t\tpublic List<{dataObjectClassIdentifier}> GetAll()");
@@ -36,17 +36,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t{");
             classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
             classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{table.PrimaryKey.Name}\", {Library.LowerFirstCharacter(table.PrimaryKey.Name)}, SqlDbType.{table.PrimaryKey.dotNetSqlDataTypes}, {table.PrimaryKey.MaximumLength});");
-            classText.AppendLine($"\t\t\tList<{dataObjectClassIdentifier}> {table.Name}Bases = Populate{table.Name}List(\"{table.Name}GetByID\", parameters);");
-            classText.AppendLine("");
-            classText.AppendLine($"\t\t\t\tswitch ({table.Name}Bases.Count)");
-            classText.AppendLine("\t\t\t\t{");
-            classText.AppendLine("\t\t\t\t\tcase 1:");
-            classText.AppendLine($"\t\t\t\t\t\treturn {table.Name}Bases[0];");
-            classText.AppendLine("\t\t\t\t\tcase 0:");
-            classText.AppendLine("\t\t\t\t\t\treturn null;");
-            classText.AppendLine("\t\t\t\t\tdefault:");
-            classText.AppendLine("\t\t\t\t\t\tthrow new Exception(\"Get by ID returning more than one record\");");
-            classText.AppendLine("\t\t\t\t}");
+            classText.AppendLine($"\t\t\treturn Individual{table.Name}(\"{table.Name}GetByID\", parameters);");
             classText.AppendLine("\t\t}");
             classText.AppendLine("");
 
@@ -163,6 +153,20 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s;");
             classText.AppendLine("\t\t}");
             classText.AppendLine("");
+
+            classText.AppendLine($"\t\tprivate {dataObjectClassIdentifier} Individual{table.Name}(string storedProcedure, List<SqlParameter> parameters)");
+            classText.AppendLine("\t\t{");
+            classText.AppendLine($"\t\t\tList<{dataObjectClassIdentifier}> {Library.LowerFirstCharacter(table.Name)}s = Populate{table.Name}List(storedProcedure, parameters);");
+            classText.AppendLine("");
+            classText.AppendLine($"\t\t\t\tswitch ({Library.LowerFirstCharacter(table.Name)}s.Count)");
+            classText.AppendLine("\t\t\t\t{");
+            classText.AppendLine($"\t\t\t\t\tcase 1: return {Library.LowerFirstCharacter(table.Name)}s[0];");
+            classText.AppendLine("\t\t\t\t\tcase 0: return null;");
+            classText.AppendLine("\t\t\t\t\tdefault: throw new Exception(\"Get by ID returning more than one record\");");
+            classText.AppendLine("\t\t\t\t}");
+            classText.AppendLine("\t\t}");
+            classText.AppendLine("");
+
             classText.AppendLine("\t\t#endregion");
 
 
