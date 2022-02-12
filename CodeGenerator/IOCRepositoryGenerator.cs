@@ -54,8 +54,6 @@ namespace CodeGenerator
                 classText.AppendLine("");
             }
             
-
-            classText.AppendLine("");
             classText.AppendLine($"\t\tprivate List<{dataObjectClassIdentifier}> Populate{table.Name}List(string storedProcedure, List<SqlParameter> parameters)");
             classText.AppendLine("\t\t{");
 
@@ -176,16 +174,8 @@ namespace CodeGenerator
             classText.AppendLine($"\t\tpublic void Save({dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)})");
             classText.AppendLine("\t\t{");
 
-            classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
+            classText.AppendLine($"\t\t\tList<SqlParameter> parameters = {table.Name}SaveParameters({Library.LowerFirstCharacter(table.Name)});");
             classText.AppendLine("");
-
-            foreach (SQLTableColumn column in table.Columns)
-            {
-                if (!column.PrimaryKey)
-                {
-                    classText.AppendLine($"\t\t\t{AddParameter(column)}");
-                }
-            }
 
             foreach (SQLTableColumn column in table.Columns)
             {
@@ -219,6 +209,27 @@ namespace CodeGenerator
             }
 
             classText.AppendLine("\t\t}");
+            classText.AppendLine("");
+
+            classText.AppendLine($"\t\tprivate List<SqlParameter> {table.Name}SaveParameters({dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)})");
+            classText.AppendLine("\t\t{");
+
+            classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
+            classText.AppendLine("");
+
+            foreach (SQLTableColumn column in table.Columns)
+            {
+                if (!column.PrimaryKey)
+                {
+                    classText.AppendLine($"\t\t\t{AddParameter(column)}");
+                }
+            }
+            classText.AppendLine("");
+            classText.AppendLine("\t\t\treturn parameters;");
+
+            classText.AppendLine("\t\t}");
+
+
             classText.AppendLine("\t\t#endregion");
 
             classText.AppendLine("");
