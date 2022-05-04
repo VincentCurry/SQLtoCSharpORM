@@ -44,24 +44,30 @@ namespace CodeGenerator
 
             classText.AppendLine(ForeignKeysCode(foreignKeys, GetLookupData));
 
-            if (table.Columns.Where(co => co.DataType == SQLDataTypes.dateTime).Count() > 0)// there are dates in the selecction
-            {
-                classText.AppendLine($"\t\tvar tzoffset = (new Date()).getTimezoneOffset() * 60000;");
-                classText.AppendLine($"\t\tvar localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);");
-                classText.AppendLine($"\t\tvar localISOTimeWithoutSeconds = localISOTime.slice(0, 16);");
-                classText.AppendLine("");
-
                 foreach (SQLTableColumn column in table.Columns)
                 {
                     if (column.DataType == SQLDataTypes.dateTime)
                     {
-                        classText.AppendLine($"\t\tvar dtl{column.Name} = document.querySelector('input[name=\"{Library.LowerFirstCharacter(column.Name)}\"]');");
-                        classText.AppendLine($"\t\tdtl{column.Name}.value = localISOTimeWithoutSeconds;");
+                        classText.AppendLine($"\t\tthis.setDateControlToCurrentDateTime('{Library.LowerFirstCharacter(column.Name)}');");
                     }
                 }
-            }
             classText.AppendLine("\t}");
             classText.AppendLine("");
+
+            if (table.Columns.Where(co => co.DataType == SQLDataTypes.dateTime).Count() > 0)// there are dates in the selecction
+            {
+                classText.AppendLine("\tsetDateControlToCurrentDateTime(fieldIdentifier) {");
+                classText.AppendLine($"\t\tvar tzoffset = (new Date()).getTimezoneOffset() * 60000;");
+                classText.AppendLine($"\t\tvar localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);");
+                classText.AppendLine($"\t\tvar localISOTimeWithoutSeconds = localISOTime.slice(0, 16);");
+                classText.AppendLine("");
+                classText.AppendLine("\t\tvar datePicker = document.querySelector('input[name=' + fieldIdentifier + ']');");
+                classText.AppendLine("\t\tdatePicker.value = localISOTimeWithoutSeconds;");
+                classText.AppendLine("\t\tthis.setState({");
+                classText.AppendLine("\t\t\t[fieldIdentifier]: localISOTimeWithoutSeconds");
+                classText.AppendLine("\t\t})");
+                classText.AppendLine("\t}");
+            }
 
             classText.AppendLine("");
             classText.AppendLine("\thandleInputChange = (event) => {");
