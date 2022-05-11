@@ -59,12 +59,12 @@ namespace CodeGenerator
 
             classText.AppendLine($"");
 
-            classText.AppendLine($"\t\t\t{table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id = {idTestValue(table.PrimaryKey)};");
+            classText.AppendLine($"\t\t\t{table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.PrimaryKey.Name)} = {idTestValue(table.PrimaryKey)};");
             classText.AppendLine($"");
-            classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Controller.Get({Library.LowerFirstCharacter(table.Name)}Id);");
+            classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Controller.Get({Library.LowerFirstCharacter(table.PrimaryKey.Name)});");
             classText.AppendLine($"");
 
-            classText.AppendLine($"\t\t\tmock{table.Name}Repo.Verify(b => b.GetByID({Library.LowerFirstCharacter(table.Name)}Id), Times.Once);");
+            classText.AppendLine($"\t\t\tmock{table.Name}Repo.Verify(b => b.GetByID({Library.LowerFirstCharacter(table.PrimaryKey.Name)}), Times.Once);");
             classText.AppendLine($"\t\t}}");
             classText.AppendLine($"");
 

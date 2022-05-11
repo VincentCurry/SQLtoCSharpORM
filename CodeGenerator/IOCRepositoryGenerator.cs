@@ -236,7 +236,7 @@ namespace CodeGenerator
 
             classText.AppendLine($"\t\t{newRegion}Deleting Items from the database");
 
-            classText.AppendLine($"\t\tpublic void Delete({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.Name)}Id)");
+            classText.AppendLine($"\t\tpublic void Delete({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.PrimaryKey.Name)})");
             classText.AppendLine($"\t\t{{");
             classText.AppendLine($"\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
             classText.AppendLine("");
