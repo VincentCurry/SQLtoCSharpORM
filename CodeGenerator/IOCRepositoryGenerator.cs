@@ -70,13 +70,21 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\tList<{dataObjectClassIdentifier}> {Library.LowerFirstCharacter(table.Name)}s = new List<{dataObjectClassIdentifier}>();");
             classText.AppendLine("");
             classText.AppendLine($"\t\t\tSqlDataReader {Library.LowerFirstCharacter(table.Name)}sData = SQLDataServer.ExecuteSPReturnDataReader(storedProcedure, parameters);");
-            classText.AppendLine($"\t\t\twhile ({Library.LowerFirstCharacter(table.Name)}sData.Read())");
-            classText.AppendLine("\t\t\t{");
+            classText.AppendLine("");
+            classText.AppendLine($"\t\t\tif ({Library.LowerFirstCharacter(table.Name)}sData == null)");
+            classText.AppendLine($"\t\t\t{{");
+            classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}sData.Close();");
+            classText.AppendLine($"\t\t\t\treturn null;");
+            classText.AppendLine($"\t\t\t}}");
+            classText.AppendLine($"\t\t\telse");
+            classText.AppendLine($"\t\t\t{{");
+                classText.AppendLine($"\t\t\t\twhile ({Library.LowerFirstCharacter(table.Name)}sData.Read())");
+            classText.AppendLine("\t\t\t\t{");
 
             if (table.PrimaryKey.DataType == SQLDataTypes.uniqueIdentifier)
-                classText.AppendLine($"\t\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = new {dataObjectClassIdentifier}({Library.LowerFirstCharacter(table.Name)}sData.GetGuid({Library.LowerFirstCharacter(table.PrimaryKey.Name)}Column));");
+                classText.AppendLine($"\t\t\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = new {dataObjectClassIdentifier}({Library.LowerFirstCharacter(table.Name)}sData.GetGuid({Library.LowerFirstCharacter(table.PrimaryKey.Name)}Column));");
             else
-                classText.AppendLine($"\t\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = new {dataObjectClassIdentifier}(Convert.ToInt32({Library.LowerFirstCharacter(table.Name)}sData[\"{table.PrimaryKey.Name}\"]));");
+                classText.AppendLine($"\t\t\t\t\t{dataObjectClassIdentifier} {Library.LowerFirstCharacter(table.Name)} = new {dataObjectClassIdentifier}(Convert.ToInt32({Library.LowerFirstCharacter(table.Name)}sData[\"{table.PrimaryKey.Name}\"]));");
             foreach (SQLTableColumn column in table.Columns)
             {
                 if (!column.PrimaryKey)
@@ -84,11 +92,11 @@ namespace CodeGenerator
                     if (column.Nullable)
                     {
                         classText.AppendLine("");
-                        classText.AppendLine($"\t\t\t\tif ({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"] != DBNull.Value)");
-                        classText.Append("\t");
+                        classText.AppendLine($"\t\t\t\t\tif ({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"] != DBNull.Value)");
+                        classText.Append("\t\t");
                     }
 
-                    classText.Append($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name} = ");
+                    classText.Append($"\t\t\t\t\t{Library.LowerFirstCharacter(table.Name)}.{column.Name} = ");
 
                     string dataReaderReadStatement;
 
@@ -144,11 +152,12 @@ namespace CodeGenerator
                 }
             }
             classText.AppendLine("");
-            classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}s.Add({Library.LowerFirstCharacter(table.Name)});");
-            classText.AppendLine("\t\t\t}");
-            classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}sData.Close();");
+            classText.AppendLine($"\t\t\t\t\t{Library.LowerFirstCharacter(table.Name)}s.Add({Library.LowerFirstCharacter(table.Name)});");
+            classText.AppendLine("\t\t\t\t}");
+            classText.AppendLine($"\t\t\t\t{Library.LowerFirstCharacter(table.Name)}sData.Close();");
             classText.AppendLine("");
-            classText.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s;");
+            classText.AppendLine($"\t\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s;");
+            classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
             classText.AppendLine("");
 
@@ -160,7 +169,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\t\t{");
             classText.AppendLine($"\t\t\t\t\tcase 1: return {Library.LowerFirstCharacter(table.Name)}s[0];");
             classText.AppendLine("\t\t\t\t\tcase 0: return null;");
-            classText.AppendLine("\t\t\t\t\tdefault: throw new Exception(\"Get by ID returning more than one record\");");
+            classText.AppendLine("\t\t\t\t\tdefault: throw new Exception($\"{storedProcedure} returning more than one record\");");
             classText.AppendLine("\t\t\t\t}");
             classText.AppendLine("\t\t}");
             classText.AppendLine("");
