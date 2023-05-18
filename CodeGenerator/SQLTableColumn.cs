@@ -32,6 +32,10 @@ namespace CodeGenerator
                 {
                     case SQLDataTypes.varChar:
                         return maximumLength;
+                    case SQLDataTypes.charType:
+                        return maximumLength;
+                    case SQLDataTypes.ncharData:
+                        return maximumLength;
                     case SQLDataTypes.dateTime:
                         return DateTimePrecision;
                     case SQLDataTypes.intData:
@@ -42,6 +46,8 @@ namespace CodeGenerator
                         return NumericPrecision;
                     case SQLDataTypes.moneyType:
                         return NumericPrecision;
+                    case SQLDataTypes.floatData:
+                        return 8;
                     default:
                         return 0;
                 }
@@ -53,7 +59,13 @@ namespace CodeGenerator
         {
             get
             {
+                if (DataType == SQLDataTypes.ncharData)
+                    return (" (" + MaximumLength.ToString() + ")");
+
                 if (DataType == SQLDataTypes.varChar)
+                    return (" (" + MaximumLength.ToString() + ")");
+
+                if (DataType == SQLDataTypes.charType)
                     return (" (" + MaximumLength.ToString() + ")");
 
                 if (DataType == SQLDataTypes.decimalData)
@@ -66,6 +78,7 @@ namespace CodeGenerator
         public string RandomValue()
         {
             Random random = new Random(Guid.NewGuid().GetHashCode());
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
             switch (DataType)
             {
@@ -75,7 +88,6 @@ namespace CodeGenerator
                     long longRand = BitConverter.ToInt32(buf, 0);
                     return Math.Abs(longRand % long.MaxValue).ToString();
                 case SQLDataTypes.varChar:
-                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                     return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
                       .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.uniqueIdentifier:
@@ -93,9 +105,11 @@ namespace CodeGenerator
                 case SQLDataTypes.floatData:
                     return "float";
                 case SQLDataTypes.ncharData:
-                    return "string";
+                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.charType:
-                    return "string";
+                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.timeType:
                     return "TimeSpan";
                 case SQLDataTypes.moneyType:
