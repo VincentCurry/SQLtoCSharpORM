@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.CodeDom;
 
 namespace CodeGenerator
 {
@@ -100,8 +101,16 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t}}");
             classText.AppendLine($"\t\tprint(\"\\(table) table created.\")");
             classText.AppendLine($"\t}}");
+            classText.AppendLine("");
 
-            foreach(SQLTable table in _sQLTables)
+            classText.AppendLine($"\tfunc appendNonNullValueToColumnAndValue(nullableValue: String?, columnName: String, columns: inout String, values: inout String) {{");
+            classText.AppendLine($"\t\tif let value = nullableValue {{");
+            classText.AppendLine($"\t\t\tcolumns += \", \" + columnName");
+            classText.AppendLine($"\t\t\tvalues += \", \" + value");
+            classText.AppendLine($"\t\t}}");
+            classText.AppendLine($"\t}}");
+
+            foreach (SQLTable table in _sQLTables)
             {
                 classText.AppendLine("");
                 GenerateInsertFunction(classText, table);
@@ -109,6 +118,8 @@ namespace CodeGenerator
                 GenerateSelectFunction(classText, table);
                 classText.AppendLine("");
                 GenerateSelectAllFunction(classText, table);
+                classText.AppendLine("");
+                GenerateSelectByQueryString(classText, table);
             }
 
             //end sql lite data base class.
@@ -130,8 +141,15 @@ namespace CodeGenerator
         private void GenerateInsertFunction(StringBuilder classText, SQLTable table)
         {
             classText.AppendLine($"\tfunc insert{table.Name}({Library.LowerFirstCharacter(table.Name)}: {table.Name}) throws {{");
-            classText.AppendLine($"\t\tlet insertSql = \"INSERT INTO {table.Name} ({string.Join(", ", table.Columns.Select(co => co.Name))}) VALUES ({string.Join(", ", table.Columns.Select(co => "?"))});\"");
-            classText.AppendLine($"\t\tlet insertStatement = try prepareStatement(sql: insertSql)");
+            classText.AppendLine($"\t\tlet insertSql = \"INSERT INTO {table.Name} (\"");
+            classText.AppendLine($"\t\tvar columnSql = \"{string.Join(", ", table.Columns.Where(co => !co.Nullable).Select(co => co.Name))}\"");
+            classText.AppendLine($"\t\tlet valueStatementSql = \") VALUES (\"");
+            classText.AppendLine($"\t\tvar valuesSql = \"{string.Join(", ", table.Columns.Where(co => !co.Nullable).Select(co => "?"))}\"");
+            classText.AppendLine($"\t\tlet endSql = \");\"");
+            classText.AppendLine("");
+            classText.AppendLine(string.Join("\n", table.Columns.Where(co => co.Nullable).Select(co => $"\t\tappendNonNullValueToColumnAndValue(nullableValue: {Library.LowerFirstCharacter(table.Name)}.{Library.LowerFirstCharacter(co.Name)}, columnName: \"{co.Name}\", columns: &columnSql, values: &valuesSql)")));
+            classText.AppendLine("");
+            classText.AppendLine($"\t\tlet insertStatement = try prepareStatement(sql: (insertSql + columnSql + valueStatementSql + valuesSql + endSql))");
             classText.AppendLine($"\t\tdefer {{");
             classText.AppendLine($"\t\t\tsqlite3_finalize(insertStatement)");
             classText.AppendLine($"\t\t}}");
@@ -139,7 +157,7 @@ namespace CodeGenerator
             
             bool prependAmpresands = false;
             int columnCounter = 1;
-            foreach (SQLTableColumn column in table.Columns)
+            foreach (SQLTableColumn column in table.Columns.Where(co => !co.Nullable))
             {
                 if (prependAmpresands)
                     classText.AppendLine(" &&");
@@ -166,37 +184,28 @@ namespace CodeGenerator
         {
             classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}({Library.LowerFirstCharacter(table.PrimaryKey.Name)}: {table.PrimaryKey.iosDataType}) -> {table.Name}? {{");
             classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = ?;\"");
-            classText.AppendLine($"\t\tguard let queryStatement = try? prepareStatement(sql: querySql) else {{");
+            classText.AppendLine($"\t\t");
+            classText.AppendLine($"\t\tif let receiptOrders = {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) {{");
+            classText.AppendLine($"\t\t\treturn receiptOrders[0]");
+            classText.AppendLine($"\t\t}} else {{"); 
             classText.AppendLine($"\t\t\treturn nil");
             classText.AppendLine($"\t\t}}");
-            classText.AppendLine($"\t\tdefer {{");
-            classText.AppendLine($"\t\t\tsqlite3_finalize(queryStatement)");
-            classText.AppendLine($"\t\t}}");
-
-            classText.AppendLine($"\t\tguard {GenerateBindText("queryStatement", table.PrimaryKey, 1, false)} else {{");
-
-            classText.AppendLine($"\t\t\treturn nil");
-            classText.AppendLine($"\t\t}}");
-            classText.AppendLine($"\t\tguard sqlite3_step(queryStatement) == SQLITE_ROW else {{");
-            classText.AppendLine($"\t\t\treturn nil");
-            classText.AppendLine($"\t\t}}");
-
-            int columnCounter = 0;
-            foreach (SQLTableColumn column in table.Columns)
-            {
-                classText.AppendLine($"\t\t{GenerateReadQueryValueText(column, columnCounter)}");
-                columnCounter++;
-            }
-            classText.AppendLine("");
-            classText.AppendLine($"\t\treturn {table.Name}({string.Join(", ", table.Columns.Select(co => Library.LowerFirstCharacter(co.Name) + ": " + Library.LowerFirstCharacter(co.Name)))})");
             classText.AppendLine($"\t}}");
         }
 
         private void GenerateSelectAllFunction(StringBuilder classText, SQLTable table)
         {
             classText.AppendLine($"\tfunc all{table.Name}s() -> [{table.Name}]? {{");
-            classText.AppendLine($"\t\tvar rows = [{table.Name}]()");
             classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name};\"");
+            classText.AppendLine($"\t\treturn {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql)");
+            classText.AppendLine($"\t}}");
+        }
+
+        private void GenerateSelectByQueryString(StringBuilder classText, SQLTable table)
+        {
+            classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) -> [{table.Name}]? {{");
+            classText.AppendLine("\t\t");
+            classText.AppendLine($"\t\tvar rows = [{table.Name}]()");
             classText.AppendLine($"\t\tguard let queryStatement = try? prepareStatement(sql: querySql) else {{");
             classText.AppendLine($"\t\t\treturn nil");
             classText.AppendLine($"\t\t}}");
@@ -227,12 +236,13 @@ namespace CodeGenerator
         private string GenerateBindText(string statementParameter, SQLTableColumn column, int columnCounter, bool includeClassNameInParameter)
         {
             string parameterToBind = $"{(includeClassNameInParameter ? Library.LowerFirstCharacter(column.TableName) + "." : "")}{Library.LowerFirstCharacter(column.Name)}";
+            string nullCheckParameterId = column.Nullable ? $"{parameterToBind} ?? NSNull()" : parameterToBind;
  
             return column.sqlLiteDataType switch
             {
                 sqlLiteStorageDataTypes.intStore => $"sqlite3_bind_int({statementParameter}, {columnCounter}, {parameterToBind}) == SQLITE_OK",
                 sqlLiteStorageDataTypes.floatStore =>(column.DataType == SQLDataTypes.dateTime ? $"sqlite3_bind_double({statementParameter}, {columnCounter}, {parameterToBind}.timeIntervalSince1970) == SQLITE_OK": $"sqlite3_bind_double({statementParameter}, {columnCounter}, {parameterToBind}) == SQLITE_OK"),
-                sqlLiteStorageDataTypes.textStore => $"sqlite3_bind_{column.sqlLiteBindType}({statementParameter}, {columnCounter}, NSString(string: {parameterToBind}).utf8String, -1, nil) == SQLITE_OK",
+                sqlLiteStorageDataTypes.textStore => $"sqlite3_bind_{column.sqlLiteBindType}({statementParameter}, {columnCounter}, NSString(string: {nullCheckParameterId}).utf8String, -1, nil) == SQLITE_OK",
                 sqlLiteStorageDataTypes.blobStore => throw new NotImplementedException("Blob storage bind not implemented"),
                 _ => throw new SQLDataTypeNotHandledInSwiftDatabaseBindText(column.DataType)
 

@@ -27,7 +27,7 @@ namespace CodeGenerator
 
                 classText.Append(column.PrimaryKey ? " PRIMARY KEY" : "");
 
-                classText.Append(column.Nullable ? " NOT NULL" : "");
+                classText.Append(column.Nullable ? "" : " NOT NULL");
 
                 prependComma = true;
             }
