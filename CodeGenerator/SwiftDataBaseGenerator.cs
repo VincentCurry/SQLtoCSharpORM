@@ -142,7 +142,7 @@ namespace CodeGenerator
         {
             classText.AppendLine($"\tfunc insert{table.Name}({Library.LowerFirstCharacter(table.Name)}: {table.Name}) throws {{");
             classText.AppendLine($"\t\tlet insertSql = \"INSERT INTO {table.Name} (\"");
-            classText.AppendLine($"\t\tvar columnSql = \"{string.Join(", ", table.Columns.Where(co => !co.Nullable).Select(co => co.Name))}\"");
+            classText.AppendLine($"\t\tvar columnSql = \"{string.Join(", ", table.Columns.Where(co => !co.Nullable).Select(co => Library.ValidSqliteColumnName(co.Name)))}\"");
             classText.AppendLine($"\t\tlet valueStatementSql = \") VALUES (\"");
             classText.AppendLine($"\t\tvar valuesSql = \"{string.Join(", ", table.Columns.Where(co => !co.Nullable).Select(co => "?"))}\"");
             classText.AppendLine($"\t\tlet endSql = \");\"");
@@ -183,10 +183,10 @@ namespace CodeGenerator
         private void GenerateSelectFunction(StringBuilder classText, SQLTable table)
         {
             classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}({Library.LowerFirstCharacter(table.PrimaryKey.Name)}: {table.PrimaryKey.iosDataType}) -> {table.Name}? {{");
-            classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = ?;\"");
+            classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + {Library.LowerFirstCharacter(table.PrimaryKey.Name)} + \"'?;\"");
             classText.AppendLine($"\t\t");
-            classText.AppendLine($"\t\tif let receiptOrders = {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) {{");
-            classText.AppendLine($"\t\t\treturn receiptOrders[0]");
+            classText.AppendLine($"\t\tif let {Library.LowerFirstCharacter(table.Name)}s = {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) {{");
+            classText.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s[0]");
             classText.AppendLine($"\t\t}} else {{"); 
             classText.AppendLine($"\t\t\treturn nil");
             classText.AppendLine($"\t\t}}");
@@ -203,7 +203,7 @@ namespace CodeGenerator
 
         private void GenerateSelectByQueryString(StringBuilder classText, SQLTable table)
         {
-            classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) -> [{table.Name}]? {{");
+            classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: String) -> [{table.Name}]? {{");
             classText.AppendLine("\t\t");
             classText.AppendLine($"\t\tvar rows = [{table.Name}]()");
             classText.AppendLine($"\t\tguard let queryStatement = try? prepareStatement(sql: querySql) else {{");
@@ -255,7 +255,7 @@ namespace CodeGenerator
             {
                 sqlLiteStorageDataTypes.intStore => $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})",
                 sqlLiteStorageDataTypes.floatStore => (column.DataType == SQLDataTypes.dateTime ? $"let {Library.LowerFirstCharacter(column.Name)} = NSDate(timeIntervalSince1970:  sqlite3_column_double(queryStatement, {columnCounter})) as Date" : $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_double(queryStatement, {columnCounter})"),
-                sqlLiteStorageDataTypes.textStore => $"let {Library.LowerFirstCharacter(column.Name)} = String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})) as String",
+                sqlLiteStorageDataTypes.textStore => column.Nullable ? $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_type(queryStatement, {columnCounter}) == SQLITE_NULL ? nil : String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})) as String" : $"let {Library.LowerFirstCharacter(column.Name)} = String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})) as String",
                 _ => throw new SQLDataTypeNotHandledInSwiftDatabaseBindText(column.DataType)
             };
         }

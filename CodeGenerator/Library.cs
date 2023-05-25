@@ -26,6 +26,26 @@ namespace CodeGenerator
             return potentialReturn;
         }
 
+        private static string Decapitalise(string stringToBeDecapitalised)
+        {
+            return stringToBeDecapitalised.Substring(0, 1).ToLower() + stringToBeDecapitalised.Substring(1);
+        }
+
+        internal static string DecapitaliseAndUpdateSwiftKeywords(string stringToBeLowered)
+        {
+            string potentialReturn = Decapitalise(stringToBeLowered);
+
+            string[] swiftKeywords = { "default" };
+
+            foreach(string keyword in swiftKeywords)
+            {
+                if(potentialReturn==keyword)
+                    return "is" + potentialReturn;
+            }
+
+            return potentialReturn;
+        }
+
         internal static string LowerFirstCharacterAndAddUnderscoreToFurtherCapitals(string stringToBeDecapitalised)
         {
 
@@ -40,6 +60,14 @@ namespace CodeGenerator
             }
 
             return potentialReturn;
+        }
+
+        internal static string ValidSqliteColumnName(string columnName)
+        {
+            if (columnName.ToLower() == "default")
+                columnName = "IsDefault";
+
+            return columnName;
         }
     }
 

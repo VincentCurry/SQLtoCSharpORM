@@ -23,7 +23,7 @@ namespace CodeGenerator
                 }
 
                 string nullableOperator = column.Nullable ? "?" : "" ;
-                classText.AppendLine($"\tvar {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}{nullableOperator}");
+                classText.AppendLine($"\tvar {Library.DecapitaliseAndUpdateSwiftKeywords(column.Name)}: {column.iosDataType}{nullableOperator}");
                 
             }
 
