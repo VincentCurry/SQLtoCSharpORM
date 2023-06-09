@@ -109,6 +109,22 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\tvalues += \", \" + value");
             classText.AppendLine($"\t\t}}");
             classText.AppendLine($"\t}}");
+            classText.AppendLine("");
+
+            classText.AppendLine($"\tfunc appendNonNullValueToColumnAndValue(nullableValue: Float?, columnName: String, columns: inout String, values: inout String) {{");
+            classText.AppendLine($"\t\tif let value = nullableValue {{");
+            classText.AppendLine($"\t\t\tcolumns += \", \" + columnName");
+            classText.AppendLine($"\t\t\tvalues += \", \" + String(value)");
+            classText.AppendLine($"\t\t}}");
+            classText.AppendLine($"\t}}");
+            classText.AppendLine("");
+
+            classText.AppendLine($"\tfunc appendNonNullValueToColumnAndValue(nullableValue: Date?, columnName: String, columns: inout String, values: inout String) {{");
+            classText.AppendLine($"\t\tif let value = nullableValue {{");
+            classText.AppendLine($"\t\t\tcolumns += \", \" + columnName");
+            classText.AppendLine($"\t\t\tvalues += \", \" + String(value.timeIntervalSince1970)");
+            classText.AppendLine($"\t\t}}");
+            classText.AppendLine($"\t}}");
 
             foreach (SQLTable table in _sQLTables)
             {
@@ -176,17 +192,23 @@ namespace CodeGenerator
             classText.AppendLine($"\t\tguard sqlite3_step(insertStatement) == SQLITE_DONE else {{");
             classText.AppendLine($"\t\t\tthrow SQLiteError.Step(message: errorMessage)");
             classText.AppendLine($"\t\t}}");
-            classText.AppendLine($"\t\tprint(\"Successfully inserted row.\")");
             classText.AppendLine($"\t}}");
         }
 
         private void GenerateSelectFunction(StringBuilder classText, SQLTable table)
         {
             classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}({Library.LowerFirstCharacter(table.PrimaryKey.Name)}: {table.PrimaryKey.iosDataType}) -> {table.Name}? {{");
-            classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + {Library.LowerFirstCharacter(table.PrimaryKey.Name)} + \"'?;\"");
+            if (table.PrimaryKey.sqlLiteDataType == sqlLiteStorageDataTypes.textStore)
+                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + {Library.LowerFirstCharacter(table.PrimaryKey.Name)} + \"'?;\"");
+            else
+                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + String({Library.LowerFirstCharacter(table.PrimaryKey.Name)}) + \"'?;\"");
             classText.AppendLine($"\t\t");
             classText.AppendLine($"\t\tif let {Library.LowerFirstCharacter(table.Name)}s = {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) {{");
-            classText.AppendLine($"\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s[0]");
+            classText.AppendLine($"\t\t\tif {Library.LowerFirstCharacter(table.Name)}s.count == 1 {{");
+            classText.AppendLine($"\t\t\t\treturn {Library.LowerFirstCharacter(table.Name)}s[0]");
+            classText.AppendLine($"\t\t\t}} else {{");
+            classText.AppendLine($"\t\t\t\treturn nil");
+            classText.AppendLine($"\t\t\t}}");
             classText.AppendLine($"\t\t}} else {{"); 
             classText.AppendLine($"\t\t\treturn nil");
             classText.AppendLine($"\t\t}}");
