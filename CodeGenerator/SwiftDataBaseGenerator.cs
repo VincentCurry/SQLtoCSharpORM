@@ -106,7 +106,7 @@ namespace CodeGenerator
             classText.AppendLine($"\tfunc appendNonNullValueToColumnAndValue(nullableValue: String?, columnName: String, columns: inout String, values: inout String) {{");
             classText.AppendLine($"\t\tif let value = nullableValue {{");
             classText.AppendLine($"\t\t\tcolumns += \", \" + columnName");
-            classText.AppendLine($"\t\t\tvalues += \", \" + value");
+            classText.AppendLine($"\t\t\tvalues += \", '\" + value + \"'\"");
             classText.AppendLine($"\t\t}}");
             classText.AppendLine($"\t}}");
             classText.AppendLine("");
@@ -199,9 +199,9 @@ namespace CodeGenerator
         {
             classText.AppendLine($"\tfunc {Library.LowerFirstCharacter(table.Name)}({Library.LowerFirstCharacter(table.PrimaryKey.Name)}: {table.PrimaryKey.iosDataType}) -> {table.Name}? {{");
             if (table.PrimaryKey.sqlLiteDataType == sqlLiteStorageDataTypes.textStore)
-                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + {Library.LowerFirstCharacter(table.PrimaryKey.Name)} + \"'?;\"");
+                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + {Library.LowerFirstCharacter(table.PrimaryKey.Name)} + \"';\"");
             else
-                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + String({Library.LowerFirstCharacter(table.PrimaryKey.Name)}) + \"'?;\"");
+                classText.AppendLine($"\t\tlet querySql = \"SELECT * FROM {table.Name} WHERE {table.PrimaryKey.Name} = '\" + String({Library.LowerFirstCharacter(table.PrimaryKey.Name)}) + \"';\"");
             classText.AppendLine($"\t\t");
             classText.AppendLine($"\t\tif let {Library.LowerFirstCharacter(table.Name)}s = {Library.LowerFirstCharacter(table.Name)}sByQueryString(querySql: querySql) {{");
             classText.AppendLine($"\t\t\tif {Library.LowerFirstCharacter(table.Name)}s.count == 1 {{");
@@ -277,7 +277,7 @@ namespace CodeGenerator
             {
                 sqlLiteStorageDataTypes.intStore => $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})",
                 sqlLiteStorageDataTypes.floatStore => (column.DataType == SQLDataTypes.dateTime ? $"let {Library.LowerFirstCharacter(column.Name)} = NSDate(timeIntervalSince1970:  sqlite3_column_double(queryStatement, {columnCounter})) as Date" : $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_double(queryStatement, {columnCounter})"),
-                sqlLiteStorageDataTypes.textStore => column.Nullable ? $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_type(queryStatement, {columnCounter}) == SQLITE_NULL ? nil : String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})) as String" : $"let {Library.LowerFirstCharacter(column.Name)} = String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter})) as String",
+                sqlLiteStorageDataTypes.textStore => column.Nullable ? $"let {Library.LowerFirstCharacter(column.Name)} = sqlite3_column_text(queryStatement, {columnCounter}) == nil ? nil : String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter}))" : $"let {Library.LowerFirstCharacter(column.Name)} = String(cString: sqlite3_column_{column.sqlLiteBindType}(queryStatement, {columnCounter}))",
                 _ => throw new SQLDataTypeNotHandledInSwiftDatabaseBindText(column.DataType)
             };
         }
