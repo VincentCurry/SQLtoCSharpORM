@@ -85,7 +85,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\tconst name = data.name;");
 
             classText.AppendLine("\t\tthis.setState({");
-            classText.AppendLine("\t\t\t[name]: data.value");
+            classText.AppendLine("\t\t\t[name]: e.value");
             classText.AppendLine("\t\t})");
             classText.AppendLine("\t}");
             classText.AppendLine("");
