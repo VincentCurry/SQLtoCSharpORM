@@ -18,9 +18,9 @@ namespace CodeGenerator
         {
             foreignKeys = sQLForeignKeyRelationsForTable(table);
 
-            classText.AppendLine("import React, { Component } from 'react'");
+            classText.AppendLine("import React, { Component } from 'react';");
 
-            classText.AppendLine(foreignKeys.Count > 0 ? "import { Dropdown } from 'semantic-ui-react'" : "");
+            classText.AppendLine(foreignKeys.Count > 0 ? "import Select from 'react-select';" : "");
             classText.AppendLine("");
 
             classText.AppendLine(ForeignKeysCode(foreignKeys, CreateLookupClass));
@@ -230,7 +230,8 @@ namespace CodeGenerator
             lookupDataAndDropDown.AppendLine("");
             lookupDataAndDropDown.AppendLine($"\tDisplay{tableName}Dropdown() {{");
             lookupDataAndDropDown.AppendLine("\t\tconst { value } = this.state;");
-            lookupDataAndDropDown.AppendLine("\t\treturn (<Dropdown");
+            lookupDataAndDropDown.AppendLine("\t\treturn (<Select");
+            lookupDataAndDropDown.AppendLine("\t\t\tclassName='form-input-dropdown'");
             lookupDataAndDropDown.AppendLine($"\t\t\tplaceholder='Select {tableName}'");
             lookupDataAndDropDown.AppendLine("\t\t\tfluid");
             lookupDataAndDropDown.AppendLine("\t\t\tselection");
