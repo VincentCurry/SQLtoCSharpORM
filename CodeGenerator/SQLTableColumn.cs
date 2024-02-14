@@ -185,7 +185,7 @@ namespace CodeGenerator
                     case SQLDataTypes.binary:
                         return "binary";
                     case SQLDataTypes.floatData:
-                        return "float";
+                        return "double";
                     case SQLDataTypes.ncharData:
                         return "string";
                     case SQLDataTypes.charType:
@@ -246,18 +246,19 @@ namespace CodeGenerator
                 {
                     SQLDataTypes.intData => htmlFormValueType.number,
                     SQLDataTypes.varChar => htmlFormValueType.text,
-                    SQLDataTypes.uniqueIdentifier=> htmlFormValueType.text,
-                    SQLDataTypes.bit=> htmlFormValueType.checkbox,
-                    SQLDataTypes.dateTime=> htmlFormValueType.datetimeLocal,                    
-                    SQLDataTypes.varBinary=> htmlFormValueType.text,                  
-                    SQLDataTypes.decimalData=> htmlFormValueType.number,                       
-                    SQLDataTypes.binary=> htmlFormValueType.number,                     
-                    SQLDataTypes.floatData=> htmlFormValueType.number,                        
-                    SQLDataTypes.ncharData=> htmlFormValueType.text,                       
-                    SQLDataTypes.charType=> htmlFormValueType.text,                       
-                    SQLDataTypes.timeType=> htmlFormValueType.number,                        
-                    SQLDataTypes.moneyType=> htmlFormValueType.number
-                };
+                    SQLDataTypes.uniqueIdentifier => htmlFormValueType.text,
+                    SQLDataTypes.bit => htmlFormValueType.checkbox,
+                    SQLDataTypes.dateTime => htmlFormValueType.datetimeLocal,
+                    SQLDataTypes.varBinary => htmlFormValueType.text,
+                    SQLDataTypes.decimalData => htmlFormValueType.number,
+                    SQLDataTypes.binary => htmlFormValueType.number,
+                    SQLDataTypes.floatData => htmlFormValueType.number,
+                    SQLDataTypes.ncharData => htmlFormValueType.text,
+                    SQLDataTypes.charType => htmlFormValueType.text,
+                    SQLDataTypes.timeType => htmlFormValueType.number,
+                    SQLDataTypes.moneyType => htmlFormValueType.number,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
+                };;
             }
         }
 
@@ -279,7 +280,8 @@ namespace CodeGenerator
                     SQLDataTypes.ncharData => kotlinDataTypes.strings,
                     SQLDataTypes.charType => kotlinDataTypes.strings,
                     SQLDataTypes.timeType => kotlinDataTypes.date,
-                    SQLDataTypes.moneyType => kotlinDataTypes.floatNum
+                    SQLDataTypes.moneyType => kotlinDataTypes.floatNum,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
         }
@@ -302,7 +304,8 @@ namespace CodeGenerator
                     SQLDataTypes.ncharData => iosDataTypes.strings,
                     SQLDataTypes.charType => iosDataTypes.strings,
                     SQLDataTypes.timeType => iosDataTypes.date,
-                    SQLDataTypes.moneyType => iosDataTypes.floatNum
+                    SQLDataTypes.moneyType => iosDataTypes.floatNum,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
         }
