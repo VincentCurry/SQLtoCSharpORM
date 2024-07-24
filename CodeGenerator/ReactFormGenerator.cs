@@ -225,7 +225,7 @@ namespace CodeGenerator
             lookupDataAndDropDown.AppendLine($"\tasync get{tableName}Data() {{");
             lookupDataAndDropDown.AppendLine($"\t\tconst response = await fetch(process.env.REACT_APP_API_ENDPOINT + '{loweredTableName}');");
             lookupDataAndDropDown.AppendLine("\t\tconst data = await response.json();");
-            lookupDataAndDropDown.AppendLine($"\t\tthis.setState({{ {loweredTableName}s: data.map(({loweredTableName}) => new {tableName}Option({loweredTableName}.{primaryKey}, {loweredTableName}.{primaryKey}, {loweredTableName}.{firstColumn})), loading: false }});");
+            lookupDataAndDropDown.AppendLine($"\t\tthis.setState({{ {loweredTableName}s: data.map(({loweredTableName}) => new {tableName}Option({loweredTableName}.{primaryKey}, {loweredTableName}.{firstColumn})), loading: false }});");
             lookupDataAndDropDown.AppendLine("}");
             lookupDataAndDropDown.AppendLine("");
             lookupDataAndDropDown.AppendLine($"\tDisplay{tableName}Dropdown() {{");
@@ -253,11 +253,10 @@ namespace CodeGenerator
 
             lookupClass.AppendLine($"export class {column.TableName}Option {{");
 
-            lookupClass.AppendLine("\tconstructor(key, value, text) {");
+            lookupClass.AppendLine("\tconstructor(key, text) {");
 
-            lookupClass.AppendLine("\t\tthis.text = text;");
-            lookupClass.AppendLine("\t\tthis.key = key;");
-            lookupClass.AppendLine("\t\tthis.value = value;");
+            lookupClass.AppendLine("\t\tthis.label = text;");
+            lookupClass.AppendLine("\t\tthis.value = key;");
             lookupClass.AppendLine("\t}");
             lookupClass.AppendLine("}");
 
