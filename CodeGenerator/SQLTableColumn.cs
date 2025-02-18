@@ -88,7 +88,7 @@ namespace CodeGenerator
                     long longRand = BitConverter.ToInt32(buf, 0);
                     return Math.Abs(longRand % long.MaxValue).ToString();
                 case SQLDataTypes.varChar:
-                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                    return "\"" + new string(Enumerable.Repeat(chars, (MaximumLength == -1 ? 50 : MaximumLength))
                       .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.uniqueIdentifier:
                     return new Guid().ToString();
