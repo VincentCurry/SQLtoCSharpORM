@@ -194,6 +194,8 @@ namespace CodeGenerator
                         return "TimeSpan";
                     case SQLDataTypes.moneyType:
                         return "decimal";
+                    case SQLDataTypes.bigInt:
+                        return "TimeSpan";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -232,6 +234,8 @@ namespace CodeGenerator
                         return "Time";
                     case SQLDataTypes.moneyType:
                         return "Money";
+                    case SQLDataTypes.bigInt:
+                        return "BigInt";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -257,8 +261,9 @@ namespace CodeGenerator
                     SQLDataTypes.charType => htmlFormValueType.text,
                     SQLDataTypes.timeType => htmlFormValueType.number,
                     SQLDataTypes.moneyType => htmlFormValueType.number,
+                    SQLDataTypes.bigInt => htmlFormValueType.number,
                     _ => throw new SQLDBTypeNotSupported(DataType)
-                };;
+                } ;
             }
         }
 
@@ -281,6 +286,7 @@ namespace CodeGenerator
                     SQLDataTypes.charType => kotlinDataTypes.strings,
                     SQLDataTypes.timeType => kotlinDataTypes.date,
                     SQLDataTypes.moneyType => kotlinDataTypes.floatNum,
+                    SQLDataTypes.bigInt => kotlinDataTypes.integer,
                     _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
@@ -305,6 +311,7 @@ namespace CodeGenerator
                     SQLDataTypes.charType => iosDataTypes.strings,
                     SQLDataTypes.timeType => iosDataTypes.date,
                     SQLDataTypes.moneyType => iosDataTypes.floatNum,
+                    SQLDataTypes.bigInt => iosDataTypes.integer,
                     _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }

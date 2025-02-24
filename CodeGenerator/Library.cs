@@ -88,6 +88,7 @@ namespace CodeGenerator
         internal const string charType = "char";
         internal const string timeType = "time";
         internal const string moneyType = "money";
+        internal const string bigInt = "bigint";
     }
 
     /*internal class DotNetSqlDataTypes

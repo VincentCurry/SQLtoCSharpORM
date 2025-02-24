@@ -141,6 +141,9 @@ namespace CodeGenerator
                         case SQLDataTypes.moneyType:
                             dataReaderReadStatement = $"Convert.ToDecimal({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
                             break;
+                        case SQLDataTypes.bigInt:
+                            dataReaderReadStatement = $"Timespan.FromTicks({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
+                            break;
                         default:
                             throw new SQLDBTypeNotSupported(column.DataType);
                     }
