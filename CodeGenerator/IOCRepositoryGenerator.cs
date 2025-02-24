@@ -142,7 +142,7 @@ namespace CodeGenerator
                             dataReaderReadStatement = $"Convert.ToDecimal({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
                             break;
                         case SQLDataTypes.bigInt:
-                            dataReaderReadStatement = $"Timespan.FromTicks({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
+                            dataReaderReadStatement = $"TimeSpan.FromTicks(Convert.ToInt64({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]));";
                             break;
                         default:
                             throw new SQLDBTypeNotSupported(column.DataType);

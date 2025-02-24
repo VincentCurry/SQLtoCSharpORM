@@ -48,6 +48,8 @@ namespace CodeGenerator
                         return NumericPrecision;
                     case SQLDataTypes.floatData:
                         return 8;
+                    case SQLDataTypes.bit:
+                        return maximumLength;
                     default:
                         return 0;
                 }
