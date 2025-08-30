@@ -59,13 +59,13 @@ namespace CodeGenerator
             classText.AppendLine($"\tfun getById({primaryKey}: String): Flow<{className}>");
 
             classText.AppendLine("\t@Insert");
-            classText.AppendLine($"\tsuspend fun insertAll(vararg {objectName}s: {className})");
+            classText.AppendLine($"\tfun insertAll(vararg {objectName}s: {className})");
 
             classText.AppendLine("\t@Insert");
-            classText.AppendLine($"\tsuspend fun insert(vararg {objectName}: {className})");
+            classText.AppendLine($"\tfun insert(vararg {objectName}: {className})");
 
             classText.AppendLine("\t@Delete");
-            classText.AppendLine($"\tsuspend fun delete({objectName}: {className})");
+            classText.AppendLine($"\tfun delete({objectName}: {className})");
             classText.AppendLine("}");
         }
     }

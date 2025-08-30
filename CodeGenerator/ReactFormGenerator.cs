@@ -18,9 +18,9 @@ namespace CodeGenerator
         {
             foreignKeys = sQLForeignKeyRelationsForTable(table);
 
-            classText.AppendLine("import React, { Component } from 'react'");
+            classText.AppendLine("import React, { Component } from 'react';");
 
-            classText.AppendLine(foreignKeys.Count > 0 ? "import { Dropdown } from 'semantic-ui-react'" : "");
+            classText.AppendLine(foreignKeys.Count > 0 ? "import Select from 'react-select';" : "");
             classText.AppendLine("");
 
             classText.AppendLine(ForeignKeysCode(foreignKeys, CreateLookupClass));
@@ -44,24 +44,30 @@ namespace CodeGenerator
 
             classText.AppendLine(ForeignKeysCode(foreignKeys, GetLookupData));
 
-            if (table.Columns.Where(co => co.DataType == SQLDataTypes.dateTime).Count() > 0)// there are dates in the selecction
-            {
-                classText.AppendLine($"\t\tvar tzoffset = (new Date()).getTimezoneOffset() * 60000;");
-                classText.AppendLine($"\t\tvar localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);");
-                classText.AppendLine($"\t\tvar localISOTimeWithoutSeconds = localISOTime.slice(0, 16);");
-                classText.AppendLine("");
-
                 foreach (SQLTableColumn column in table.Columns)
                 {
                     if (column.DataType == SQLDataTypes.dateTime)
                     {
-                        classText.AppendLine($"\t\tvar dtl{column.Name} = document.querySelector('input[name=\"{Library.LowerFirstCharacter(column.Name)}\"]');");
-                        classText.AppendLine($"\t\tdtl{column.Name}.value = localISOTimeWithoutSeconds;");
+                        classText.AppendLine($"\t\tthis.setDateControlToCurrentDateTime('{Library.LowerFirstCharacter(column.Name)}');");
                     }
                 }
-            }
             classText.AppendLine("\t}");
             classText.AppendLine("");
+
+            if (table.Columns.Where(co => co.DataType == SQLDataTypes.dateTime).Count() > 0)// there are dates in the selecction
+            {
+                classText.AppendLine("\tsetDateControlToCurrentDateTime(fieldIdentifier) {");
+                classText.AppendLine($"\t\tvar tzoffset = (new Date()).getTimezoneOffset() * 60000;");
+                classText.AppendLine($"\t\tvar localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);");
+                classText.AppendLine($"\t\tvar localISOTimeWithoutSeconds = localISOTime.slice(0, 16);");
+                classText.AppendLine("");
+                classText.AppendLine("\t\tvar datePicker = document.querySelector('input[name=' + fieldIdentifier + ']');");
+                classText.AppendLine("\t\tdatePicker.value = localISOTimeWithoutSeconds;");
+                classText.AppendLine("\t\tthis.setState({");
+                classText.AppendLine("\t\t\t[fieldIdentifier]: localISOTimeWithoutSeconds");
+                classText.AppendLine("\t\t})");
+                classText.AppendLine("\t}");
+            }
 
             classText.AppendLine("");
             classText.AppendLine("\thandleInputChange = (event) => {");
@@ -79,7 +85,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\tconst name = data.name;");
 
             classText.AppendLine("\t\tthis.setState({");
-            classText.AppendLine("\t\t\t[name]: data.value");
+            classText.AppendLine("\t\t\t[name]: e.value");
             classText.AppendLine("\t\t})");
             classText.AppendLine("\t}");
             classText.AppendLine("");
@@ -219,12 +225,13 @@ namespace CodeGenerator
             lookupDataAndDropDown.AppendLine($"\tasync get{tableName}Data() {{");
             lookupDataAndDropDown.AppendLine($"\t\tconst response = await fetch(process.env.REACT_APP_API_ENDPOINT + '{loweredTableName}');");
             lookupDataAndDropDown.AppendLine("\t\tconst data = await response.json();");
-            lookupDataAndDropDown.AppendLine($"\t\tthis.setState({{ {loweredTableName}s: data.map(({loweredTableName}) => new {tableName}Option({loweredTableName}.{primaryKey}, {loweredTableName}.{primaryKey}, {loweredTableName}.{firstColumn})), loading: false }});");
+            lookupDataAndDropDown.AppendLine($"\t\tthis.setState({{ {loweredTableName}s: data.map(({loweredTableName}) => new {tableName}Option({loweredTableName}.{primaryKey}, {loweredTableName}.{firstColumn})), loading: false }});");
             lookupDataAndDropDown.AppendLine("}");
             lookupDataAndDropDown.AppendLine("");
             lookupDataAndDropDown.AppendLine($"\tDisplay{tableName}Dropdown() {{");
             lookupDataAndDropDown.AppendLine("\t\tconst { value } = this.state;");
-            lookupDataAndDropDown.AppendLine("\t\treturn (<Dropdown");
+            lookupDataAndDropDown.AppendLine("\t\treturn (<Select");
+            lookupDataAndDropDown.AppendLine("\t\t\tclassName='form-input-dropdown'");
             lookupDataAndDropDown.AppendLine($"\t\t\tplaceholder='Select {tableName}'");
             lookupDataAndDropDown.AppendLine("\t\t\tfluid");
             lookupDataAndDropDown.AppendLine("\t\t\tselection");
@@ -246,11 +253,10 @@ namespace CodeGenerator
 
             lookupClass.AppendLine($"export class {column.TableName}Option {{");
 
-            lookupClass.AppendLine("\tconstructor(key, value, text) {");
+            lookupClass.AppendLine("\tconstructor(key, text) {");
 
-            lookupClass.AppendLine("\t\tthis.text = text;");
-            lookupClass.AppendLine("\t\tthis.key = key;");
-            lookupClass.AppendLine("\t\tthis.value = value;");
+            lookupClass.AppendLine("\t\tthis.label = text;");
+            lookupClass.AppendLine("\t\tthis.value = key;");
             lookupClass.AppendLine("\t}");
             lookupClass.AppendLine("}");
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 
 namespace CodeGenerator
 {
@@ -23,11 +24,11 @@ namespace CodeGenerator
                 if (prependComma)
                     classText.Append("," + Environment.NewLine);
 
-                classText.Append("\t\t\t" + column.Name + " " + column.sqlLiteDataType + column.SizeForSQLProcedureParameters);
+                classText.Append("\t\t\t" + Library.ValidSqliteColumnName(column.Name) + " " + column.sqlLiteDataType + column.SizeForSQLProcedureParameters);
 
                 classText.Append(column.PrimaryKey ? " PRIMARY KEY" : "");
 
-                classText.Append(column.Nullable ? " NOT NULL" : "");
+                classText.Append(column.Nullable ? "" : " NOT NULL");
 
                 prependComma = true;
             }
