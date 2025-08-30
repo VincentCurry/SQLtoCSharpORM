@@ -45,8 +45,6 @@ namespace CodeGenerator
 
                 classText = new StringBuilder();
                 GenerateFilePerTable(table);
-
-                //TextWriter writer = File.CreateText($"{_destinationFolder}{fileNamePrefix}{table.Name}{fileNameSuffix}.{fileSuffix}");
                 TextWriter writer = File.CreateText(FileName(table.Name));
 
                 writer.Write(classText.ToString());

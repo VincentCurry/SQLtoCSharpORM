@@ -52,6 +52,7 @@
     <Compile Include="AndroidDatabaseGenerator.cs" />
     <Compile Include="AndroidDataClassGenerator.cs" />
     <Compile Include="AndroidFragmentGenerator.cs" />
+    <Compile Include="AndroidModelGenerator.cs" />
     <Compile Include="AndroidRepositoryGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
