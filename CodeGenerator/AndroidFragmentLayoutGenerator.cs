@@ -3,9 +3,9 @@ using System.Text;
 
 namespace CodeGenerator
 {
-    public class AndroidFragmentGenerator : Generator
+    public class AndroidFragmentLayoutGenerator : Generator
     {
-        public AndroidFragmentGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
+        public AndroidFragmentLayoutGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "xml";
             fileNamePrefix = "fragment_";
