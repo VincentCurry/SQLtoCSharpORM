@@ -16,19 +16,24 @@ namespace CodeGenerator
         string setNoCount = "SET NOCOUNT ON;";
         string procedureDivider = Environment.NewLine + "--__________________________________________________" + Environment.NewLine;
 
+        string _spUserName;
+
         public SQLStatementGenerator(List<SQLTable> tables) : base(tables, "", "")
         {
             tablesToGenerate = tables;
         }
 
-        public void GenerateSQLStatements(List<SQLTable> tables, string destinationFile)
+        public void GenerateSQLStatements(List<SQLTable> tables, string destinationFile, string executeSPPermissionFile, string spUserName)
         {
             StringBuilder sqlStatement = new StringBuilder();
+            StringBuilder executeSPPermission = new StringBuilder();
+            _spUserName = spUserName;
 
             foreach (SQLTable table in tables)
             {
                 sqlStatement.AppendLine("GO");
                 sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetByID]" + Environment.NewLine);
+                executeSPPermission.Append(ExecutePermissionStatement(table.Name + "GetByID"));
                 sqlStatement.Append("@" + table.PrimaryKey.Name + " " + table.PrimaryKey.DataType.ToString() + Environment.NewLine);
                 GenerateSelectStatement(table, sqlStatement);
                 sqlStatement.AppendLine(sqlRowIdentifier(table.PrimaryKey.Name));
@@ -36,14 +41,15 @@ namespace CodeGenerator
                 sqlStatement.Append(procedureDivider);
                 sqlStatement.AppendLine("GO");
                 sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetAll]" + Environment.NewLine);
+                executeSPPermission.Append(ExecutePermissionStatement(table.Name + "GetAll"));
                 GenerateSelectStatement(table, sqlStatement);
                 sqlStatement.AppendLine("END");
-                GenerateForeignKeyStatements(table, sqlStatement);
-                GenerateInsertStatement(table, sqlStatement);
+                GenerateForeignKeyStatements(table, sqlStatement, executeSPPermission);
+                GenerateInsertStatement(table, sqlStatement, executeSPPermission);
                 sqlStatement.Append(procedureDivider);
-                GenerateUpdateStatement(table, sqlStatement);
+                GenerateUpdateStatement(table, sqlStatement, executeSPPermission);
                 sqlStatement.Append(procedureDivider);
-                GenerateDeleteStatement(table, sqlStatement);
+                GenerateDeleteStatement(table, sqlStatement, executeSPPermission);
                 sqlStatement.Append(procedureDivider);
                 GenerateForeignKeyDeleteStatements(table, sqlStatement);
                 
@@ -52,6 +58,12 @@ namespace CodeGenerator
             TextWriter writer = File.CreateText(destinationFile);
 
             writer.Write(sqlStatement.ToString());
+
+            writer.Close();
+
+            writer = File.CreateText(executeSPPermissionFile);
+
+            writer.Write(executeSPPermission.ToString());
 
             writer.Close();
             
@@ -83,7 +95,7 @@ namespace CodeGenerator
             sqlStatement.AppendLine("");
         }
 
-        void GenerateForeignKeyStatements(SQLTable table, StringBuilder sqlStatement)
+        void GenerateForeignKeyStatements(SQLTable table, StringBuilder sqlStatement, StringBuilder executeSPPermission)
         {
             List<SQLForeignKeyRelation> foreignKeys = sQLForeignKeyRelationsForTable(table);
 
@@ -93,6 +105,7 @@ namespace CodeGenerator
 
                 sqlStatement.AppendLine(go);
                 sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "GetBy"+ column.Name + "]" + Environment.NewLine);
+                executeSPPermission.Append(ExecutePermissionStatement(table.Name + "GetBy" + column.Name));
                 sqlStatement.Append("@" + column.Name + " " + column.DataType.ToString() + Environment.NewLine);
                 GenerateSelectStatement(table, sqlStatement);
 
@@ -104,10 +117,11 @@ namespace CodeGenerator
             
         }
        
-        void GenerateInsertStatement(SQLTable table, StringBuilder sqlStatement)
+        void GenerateInsertStatement(SQLTable table, StringBuilder sqlStatement, StringBuilder executeSPPermission)
         {
             sqlStatement.AppendLine("GO");
             sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "Insert]" + Environment.NewLine);
+            executeSPPermission.Append(ExecutePermissionStatement(table.Name + "Insert"));
 
             bool appendComma = false;
 
@@ -187,10 +201,11 @@ namespace CodeGenerator
             sqlStatement.AppendLine("END");
         }
 
-        void GenerateUpdateStatement(SQLTable table, StringBuilder sqlStatement)
+        void GenerateUpdateStatement(SQLTable table, StringBuilder sqlStatement, StringBuilder executeSPPermission)
         {
             sqlStatement.AppendLine("GO");
             sqlStatement.Append("CREATE PROCEDURE [dbo].[" + table.Name + "Update]" + Environment.NewLine);
+            executeSPPermission.Append(ExecutePermissionStatement($"{table.Name}Update"));
 
             bool appendComma = false;
             foreach (SQLTableColumn column in table.Columns)
@@ -228,10 +243,11 @@ namespace CodeGenerator
             sqlStatement.AppendLine("END");
         }
 
-        void GenerateDeleteStatement(SQLTable table, StringBuilder sqlStatement)
+        void GenerateDeleteStatement(SQLTable table, StringBuilder sqlStatement, StringBuilder executeSPPermission)
         {
             sqlStatement.AppendLine(go);
             sqlStatement.AppendLine("CREATE PROCEDURE [dbo].[" + table.Name + "Delete]" + Environment.NewLine);
+            executeSPPermission.Append(ExecutePermissionStatement(table.Name + "Delete"));
 
             sqlStatement.AppendLine($"@{table.PrimaryKey.Name} {table.PrimaryKey.DataType}");
             sqlStatement.AppendLine(sqlAs);
@@ -276,6 +292,11 @@ namespace CodeGenerator
         internal override void GenerateFilePerTable(SQLTable table)
         {
             throw new NotImplementedException();
+        }
+
+        string ExecutePermissionStatement(string storedProcedure)
+        {
+            return $"GRANT EXECUTE ON OBJECT::dbo.{storedProcedure}\nTO {_spUserName};\n";
         }
     }
 

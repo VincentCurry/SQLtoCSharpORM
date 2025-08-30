@@ -22,7 +22,8 @@ namespace CodeGenerator
                     classText.AppendLine($"\tvar id: {column.iosDataType} {{ {Library.LowerFirstCharacter(column.Name)} }}");
                 }
 
-                classText.AppendLine($"\tvar {Library.LowerFirstCharacter(column.Name)}: {column.iosDataType}");
+                string nullableOperator = column.Nullable ? "?" : "" ;
+                classText.AppendLine($"\tvar {Library.DecapitaliseAndUpdateSwiftKeywords(column.Name)}: {column.iosDataType}{nullableOperator}");
                 
             }
 
