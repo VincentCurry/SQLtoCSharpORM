@@ -6,7 +6,7 @@ namespace CodeGenerator
     {
         public IOCRepositoryGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "RepositorySql";
+            fileNameSuffix = "RepositorySql";
         }
         
         internal override void GenerateFilePerTable(SQLTable table)

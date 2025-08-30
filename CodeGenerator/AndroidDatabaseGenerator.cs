@@ -11,7 +11,7 @@ namespace CodeGenerator
         public AndroidDatabaseGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "kt";
-            filePrefix = "Database";
+            fileNameSuffix = "Database";
         }
         internal override void GenerateFilePerTable(SQLTable table)
         {
@@ -61,7 +61,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t}}");
             classText.AppendLine($"}}");
 
-            TextWriter writer = File.CreateText($"{_destinationFolder}{_nameSpace}{filePrefix}.{fileSuffix}");
+            TextWriter writer = File.CreateText($"{_destinationFolder}{_nameSpace}{fileNameSuffix}.{fileSuffix}");
 
             writer.Write(classText.ToString());
 

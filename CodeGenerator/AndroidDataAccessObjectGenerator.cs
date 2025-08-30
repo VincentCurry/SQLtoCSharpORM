@@ -9,7 +9,7 @@ namespace CodeGenerator
         public AndroidDataAccessObjectGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "kt";
-            filePrefix = "Dao";
+            fileNameSuffix = "Dao";
         }
 
         internal override void GenerateFilePerForeignKey(SQLForeignKeyRelation foreignKeyRelation, string className)

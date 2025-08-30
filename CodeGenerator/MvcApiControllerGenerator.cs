@@ -6,7 +6,7 @@ namespace CodeGenerator
     {
         public MvcApiControllerGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "Controller";
+            fileNameSuffix = "Controller";
         }
 
         internal override void GenerateFilePerTable(SQLTable table)

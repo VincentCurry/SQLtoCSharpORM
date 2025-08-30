@@ -10,7 +10,7 @@ namespace CodeGenerator
         List<SQLForeignKeyRelation> foreignKeys;
         public ReactFormGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "";
+            fileNameSuffix = "";
             fileSuffix = "js";
         }
 

@@ -15,7 +15,7 @@ namespace CodeGenerator
         internal string newRegion = "#region ";
         internal string endRegion = "#endregion";
         internal string dataObjectClassIdentifier;
-        internal string filePrefix;
+        internal string fileNameSuffix;
         internal string fileSuffix = "cs";
         public Generator(List<SQLTable> tables, string destinationFolder, string nameSpace)
         {
@@ -40,7 +40,7 @@ namespace CodeGenerator
                 classText = new StringBuilder();
                 GenerateFilePerTable(table);
                 
-                TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}{filePrefix}.{fileSuffix}");
+                TextWriter writer = File.CreateText($"{_destinationFolder}{table.Name}{fileNameSuffix}.{fileSuffix}");
 
                 writer.Write(classText.ToString());
 

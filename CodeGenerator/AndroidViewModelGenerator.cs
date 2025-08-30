@@ -7,7 +7,7 @@ namespace CodeGenerator
         public AndroidViewModelGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "kt";
-            filePrefix = "ViewModel";
+            fileNameSuffix = "ViewModel";
         }
 
         internal override void GenerateFilePerForeignKey(SQLForeignKeyRelation foreignKeyRelation, string className)
