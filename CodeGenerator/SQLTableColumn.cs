@@ -24,6 +24,10 @@ namespace CodeGenerator
 
         private int maximumLength;
 
+        public bool IsToBeValidated
+        {
+            get { return !this.PrimaryKey && (!this.Nullable || this.cSharpDataType == "string"); }
+        }
         public int MaximumLength
         {
             get
