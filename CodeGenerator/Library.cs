@@ -1,8 +1,8 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 
 namespace CodeGenerator
 {
@@ -68,6 +68,40 @@ namespace CodeGenerator
                 columnName = "IsDefault";
 
             return columnName;
+        }
+
+        internal delegate string CodeForColumn(SQLTableColumn column);
+
+        internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
+        {
+            StringBuilder columnsCode = new StringBuilder();
+
+            bool firstColumn = true;
+
+            foreach (SQLTableColumn column in table.Columns)
+            {
+
+                if (!column.PrimaryKey || includePrimaryKey)
+                {
+                    if (!firstColumn && appendCommas)
+                    {
+                        columnsCode.Append(",");
+                        columnsCode.Append(singleLine ? " " : "");
+                    }
+
+                    firstColumn = false;
+                    if (singleLine)
+                    {
+                        columnsCode.Append(codeFunction(column));
+                    }
+                    else
+                    {
+                        columnsCode.AppendLine(codeFunction(column));
+                    }
+                }
+            }
+
+            return columnsCode.ToString();
         }
     }
 
