@@ -33,8 +33,12 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}Id.value = result.data.{table.Name.Decapitalise()}Id");
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
-            classText.AppendLine("}");
+            classText.Append(Environment.NewLine);
 
+            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.ParameterNameAndType, false, true, true)}: Result<{table.Name}> {{");
+            classText.AppendLine($"\t\treturn dataSource.save({Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)})");
+            classText.AppendLine("\t}");
+            classText.AppendLine("}");
         }
     }
 }
