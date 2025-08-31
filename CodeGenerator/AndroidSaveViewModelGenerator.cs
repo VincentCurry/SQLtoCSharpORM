@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 
 namespace CodeGenerator
 {
@@ -45,10 +43,10 @@ namespace CodeGenerator
             classText.AppendLine("\tval loggedInUser: LiveData<LoggedInUser?> = _loggedInUser");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun save{table.Name}({Library.TableColumnsCode(table, ParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine($"\tfun save{table.Name}({Library.TableColumnsCode(table, Library.ParameterNameAndType, false, true, true)}) {{");
             classText.AppendLine("\t\tviewModelScope.launch {");
             classText.Append($"\t\t\tval result = {table.Name.Decapitalise()}Repository.save{table.Name}(");
-            classText.Append($"{Library.TableColumnsCode(table, ColumnName, false, true, true)}");
+            classText.Append($"{Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)}");
             classText.AppendLine(")");
             classText.Append(Environment.NewLine);
 
@@ -63,7 +61,7 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table, ParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table, Library.ParameterNameAndType, false, true, true)}) {{");
 
             foreach(SQLTableColumn column in table.Columns)
             {
@@ -116,14 +114,5 @@ namespace CodeGenerator
 
         }
 
-        private string ColumnName(SQLTableColumn column)
-        {
-            return column.Name.Decapitalise();
-        }
-
-        private string ParameterNameAndType(SQLTableColumn column)
-        {
-            return $"{column.Name.Decapitalise()}: {column.kotlinDataType}";
-        }
     }
 }

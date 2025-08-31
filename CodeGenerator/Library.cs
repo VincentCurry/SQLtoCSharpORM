@@ -72,6 +72,15 @@ namespace CodeGenerator
 
         internal delegate string CodeForColumn(SQLTableColumn column);
 
+        internal static string ParameterNameAndType(SQLTableColumn column)
+        {
+            return $"{column.Name.Decapitalise()}: {column.kotlinDataType}";
+        }
+        internal static string ColumnNameDecapitalised(SQLTableColumn column)
+        {
+            return column.Name.Decapitalise();
+        }
+
         internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
         {
             StringBuilder columnsCode = new StringBuilder();
