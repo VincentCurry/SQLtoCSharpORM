@@ -58,6 +58,7 @@
     <Compile Include="AndroidFragmentLayoutGenerator.cs" />
     <Compile Include="AndroidModelGenerator.cs" />
     <Compile Include="AndroidRepositoryGenerator.cs" />
+    <Compile Include="AndroidResultGenerator.cs" />
     <Compile Include="AndroidSaveViewModelGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
