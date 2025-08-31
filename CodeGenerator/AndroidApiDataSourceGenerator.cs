@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeGenerator
 {
@@ -20,16 +17,19 @@ namespace CodeGenerator
             classText.AppendLine($"package com.{_nameSpace}.data");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine("import com.google.gson.GsonBuilder");
-            classText.AppendLine("import com.google.gson.reflect.TypeToken");
             classText.AppendLine($"import com.{_nameSpace}.BuildConfig");
             classText.AppendLine($"import com.{_nameSpace}.data.model.{table.Name}");
 
             classText.AppendLine("import kotlinx.coroutines.Dispatchers");
             classText.AppendLine("import kotlinx.coroutines.withContext");
             classText.AppendLine("import java.io.IOException");
-            classText.AppendLine("import java.net.HttpURLConnection");
-            classText.AppendLine("import java.net.URLEncoder");
+
+            if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
+            {
+                classText.AppendLine("import java.util.Date");
+            }
+            classText.AppendLine("import okhttp3.Response");
+
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"class {table.Name}DataSource {{");
@@ -48,7 +48,10 @@ namespace CodeGenerator
 
             classText.AppendLine($"\t\t\t\tif ({table.Name.Decapitalise()}Response.code() in 100..399) {{");
             classText.AppendLine($"\t\t\t\t\t{table.Name.Decapitalise()}Id = {table.Name.Decapitalise()}Response.body()?.string()?.trim('\"') ?: \"\"");
-            classText.AppendLine($"\t\t\t\t\t{table.Name.Decapitalise()}.{table.Name.Decapitalise()}Id = {table.Name.Decapitalise()}Id");
+            classText.AppendLine($"\t\t\t\t\tval {table.Name.Decapitalise()}:{table.Name} = {table.Name} (");
+            classText.AppendLine(Library.TableColumnsCode(table, ParameterForObjectCreation, includePrimaryKey: true, appendCommas: true, singleLine: false));
+            classText.AppendLine(")");
+
             classText.AppendLine($"\t\t\t\t\tResult.Success({table.Name.Decapitalise()})");
             classText.AppendLine("\t\t\t\t} else {");
             classText.AppendLine($"\t\t\t\t\tResult.Error(IOException(\"HTTP error code: ${{{table.Name.Decapitalise()}Response.code()}}\"))");
@@ -61,8 +64,14 @@ namespace CodeGenerator
             classText.AppendLine("}");
         }
 
-        private string CreateJsonSerialization(SQLTableColumn column) {
-            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.TableName.Decapitalise()}.{column.Name.Decapitalise()}}}\\\"";
+        private string CreateJsonSerialization(SQLTableColumn column) 
+        {
+            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.Name.Decapitalise()}}}\\\"";
+        }
+
+        private string ParameterForObjectCreation(SQLTableColumn column)
+        {
+            return $"{column.Name.Decapitalise()} = {column.Name.Decapitalise()}";
         }
     }
 }
