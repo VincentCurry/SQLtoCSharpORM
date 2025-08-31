@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CodeGenerator
 {
@@ -19,13 +20,17 @@ namespace CodeGenerator
 
             classText.AppendLine("import androidx.lifecycle.MutableLiveData");
             classText.AppendLine($"import com.{_nameSpace}.data.model.{table.Name}");
+            if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
+            {
+                classText.AppendLine("import java.util.Date");
+            }
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"class {table.Name}Repository (val dataSource: {table.Name}DataSource) {{");
             classText.AppendLine($"\tvar {table.Name.Decapitalise()}Id: MutableLiveData<{table.PrimaryKey.kotlinDataType}> = MutableLiveData<{table.PrimaryKey.kotlinDataType}> ( \"\")");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tsuspend fun fetch{table.Name}({table.Name.Decapitalise()}: {table.Name}) {{");
+            /*classText.AppendLine($"\tsuspend fun fetch{table.Name}({table.Name.Decapitalise()}: {table.Name}) {{");
             classText.AppendLine($"\t\tval result: Result<{table.Name}> = dataSource.get{table.Name}({table.Name.Decapitalise()})");
             classText.Append(Environment.NewLine);
 
@@ -33,10 +38,10 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}Id.value = result.data.{table.Name.Decapitalise()}Id");
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
-            classText.Append(Environment.NewLine);
+            classText.Append(Environment.NewLine);*/
 
-            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}: Result<{table.Name}> {{");
-            classText.AppendLine($"\t\treturn dataSource.save({Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)})");
+            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) : Result<{table.Name}> {{");
+            classText.AppendLine($"\t\treturn dataSource.save{table.Name}({Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)})");
             classText.AppendLine("\t}");
             classText.AppendLine("}");
         }
