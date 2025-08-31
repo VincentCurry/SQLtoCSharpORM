@@ -41,10 +41,44 @@ namespace CodeGenerator
             {
                 classText.AppendLine(CreateInputField(null, table.Columns[0], null));
             }
-            
+
+            classText.AppendLine("\t\t<com.google.android.material.button.MaterialButton");
+            classText.AppendLine($"\t\t\tandroid:id=\"@+id/save{table.Name}\"");
+            classText.AppendLine("\t\t\tandroid:layout_width=\"wrap_content\"");
+            classText.AppendLine("\t\t\tandroid:layout_height=\"wrap_content\"");
+            classText.AppendLine("\t\t\tandroid:layout_gravity=\"start\"");
+            //classText.AppendLine("\t\t\tandroid:layout_marginStart=\"48dp\"");
+            //classText.AppendLine("\t\t\tandroid:layout_marginTop=\"16dp\"");
+            //classText.AppendLine("\t\t\tandroid:layout_marginEnd=\"48dp\"");
+            //classText.AppendLine("\t\t\tandroid:layout_marginBottom=\"64dp\"");
+            classText.AppendLine("\t\t\tandroid:enabled=\"false\"");
+            classText.AppendLine($"\t\t\tandroid:text=\"@string/{table.Name.ToLower()}_save\"");
+            Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_save", $"Save {table.Name}");
+            classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintVertical_bias=\"0.2\" />");
+
+            classText.AppendLine($"\t<ProgressBar");
+            classText.AppendLine($"\t\t\tandroid:id=\"@+id/loading\"");
+            classText.AppendLine($"\t\t\tandroid:layout_width=\"wrap_content\"");
+            classText.AppendLine($"\t\t\tandroid:layout_height=\"wrap_content\"");
+            classText.AppendLine($"\t\t\tandroid:layout_gravity=\"center\"");
+            classText.AppendLine($"\t\t\tandroid:layout_marginStart=\"32dp\"");
+            classText.AppendLine($"\t\t\tandroid:layout_marginTop=\"64dp\"");
+            classText.AppendLine($"\t\t\tandroid:layout_marginEnd=\"32dp\"");
+            classText.AppendLine($"\t\t\tandroid:layout_marginBottom=\"64dp\"");
+            classText.AppendLine($"\t\t\tandroid:visibility=\"gone\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintTop_toTopOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintVertical_bias=\"0.3\" /> ");
+
+
             classText.AppendLine(StandardConstraintLayoutFinish());
         }
-
 
         private string StandardConstraintLayoutStart(string tableName)
         {
@@ -103,7 +137,7 @@ namespace CodeGenerator
             inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
             inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
             inputFieldCode.AppendLine(previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{Library.LowerFirstCharacter(previousColumn.Name)}\"");
-            inputFieldCode.AppendLine(nextColumn == null ? "\t\tapp:layout_constraintBottom_toBottomOf=\"parent\" >" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\" >");
+            inputFieldCode.AppendLine(nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\" >" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\" >");
             inputFieldCode.AppendLine("\t\t<com.google.android.material.textfield.TextInputEditText");
             inputFieldCode.AppendLine("\t\t\tandroid:inputType=\"text\"");
             inputFieldCode.AppendLine("\t\t\tandroid:selectAllOnFocus=\"true\"");

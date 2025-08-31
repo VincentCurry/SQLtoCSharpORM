@@ -75,7 +75,7 @@ namespace CodeGenerator
                     classText.AppendLine($"\t\tval {column.Name.Decapitalise()}EditText = binding.{column.Name.Decapitalise()}");
                 }
             }
-            classText.AppendLine("\t\tval saveButton = binding.save");
+            classText.AppendLine($"\t\tval save{table.Name}Button = binding.save{table.Name}");
             classText.AppendLine("\t\tval loadingProgressBar = binding.loading");
             classText.AppendLine(Environment.NewLine);
 
@@ -85,7 +85,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t\tif ({table.Name.Decapitalise()}FormState == null) {{");
             classText.AppendLine("\t\t\t\t\treturn@Observer");
             classText.AppendLine("\t\t\t\t}");
-            classText.AppendLine($"\t\t\t\tsaveButton.isEnabled = {table.Name.Decapitalise()}FormState.isDataValid");
+            classText.AppendLine($"\t\t\t\tsave{table.Name}Button.isEnabled = {table.Name.Decapitalise()}FormState.isDataValid");
 
             foreach (SQLTableColumn column in table.Columns)
             {
@@ -133,7 +133,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t}");
             classText.AppendLine(Library.TableColumnsCode(table, TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine(Environment.NewLine);
-            classText.AppendLine("\t\tsaveButton.setOnClickListener {");
+            classText.AppendLine($"\t\tsave{table.Name}Button.setOnClickListener {{");
             classText.AppendLine("\t\t\tloadingProgressBar.visibility = View.VISIBLE");
             classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}ViewModel.save{table.Name}(");
             classText.AppendLine(Library.TableColumnsCode(table, TextBoxesForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));

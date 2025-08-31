@@ -60,6 +60,7 @@
     <Compile Include="AndroidRepositoryGenerator.cs" />
     <Compile Include="AndroidResultGenerator.cs" />
     <Compile Include="AndroidSaveViewModelGenerator.cs" />
+    <Compile Include="AndroidViewModelFactoryGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
