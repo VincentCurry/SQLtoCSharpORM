@@ -43,7 +43,7 @@ namespace CodeGenerator
             classText.AppendLine("\tval loggedInUser: LiveData<LoggedInUser?> = _loggedInUser");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun save{table.Name}({Library.TableColumnsCode(table, Library.ParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine($"\tfun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) {{");
             classText.AppendLine("\t\tviewModelScope.launch {");
             classText.Append($"\t\t\tval result = {table.Name.Decapitalise()}Repository.save{table.Name}(");
             classText.Append($"{Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)}");
@@ -61,7 +61,7 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table, Library.ParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) {{");
 
             foreach(SQLTableColumn column in table.Columns)
             {
@@ -98,18 +98,7 @@ namespace CodeGenerator
                     
                     classText.AppendLine("\t}");
                     classText.Append(Environment.NewLine);
-                    /*classText.AppendLine("\t\treturn if (username.contains(\"@\")) {");
-                    classText.AppendLine("\t\tPatterns.EMAIL_ADDRESS.matcher(username).matches()");
-                    classText.AppendLine("\t\t} else {");
-                    classText.AppendLine("\t\t\tusername.isNotBlank()");
-                    classText.AppendLine("\t\t}");*/
                 }
-                /*classText.AppendLine("\t// A placeholder password validation check");
-                classText.AppendLine("\tprivate fun isPasswordValid(password: String): Boolean {");
-                classText.AppendLine("\t\treturn password.length > 5");
-                classText.AppendLine("\t}");
-                classText.AppendLine("}");
-                classText.Append(Environment.NewLine);*/
             }
 
         }

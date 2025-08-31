@@ -17,7 +17,7 @@ namespace CodeGenerator
         }
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            classText.AppendLine(StandardConstraintLayoutStart());
+            classText.AppendLine(StandardConstraintLayoutStart(table.Name));
 
             if (table.Columns.Count > 1)
             {
@@ -46,7 +46,7 @@ namespace CodeGenerator
         }
 
 
-        private string StandardConstraintLayoutStart()
+        private string StandardConstraintLayoutStart(string tableName)
         {
             StringBuilder standardConstraintStart = new StringBuilder();
 
@@ -56,7 +56,7 @@ namespace CodeGenerator
             standardConstraintStart.AppendLine("\tandroid:layout_height=\"match_parent\"");
             standardConstraintStart.AppendLine("\txmlns:tools=\"http://schemas.android.com/tools\"");
             standardConstraintStart.AppendLine("\txmlns:app=\"http://schemas.android.com/apk/res-auto\"");
-            standardConstraintStart.AppendLine("\ttools:context=\".ui.oneOffScanCode.OneOffScanCodeFragment\">");
+            standardConstraintStart.AppendLine($"\ttools:context=\".ui.{tableName.Decapitalise()}.{tableName}Fragment\">");
 
             return standardConstraintStart.ToString();
         }
@@ -66,7 +66,7 @@ namespace CodeGenerator
             return "</androidx.constraintlayout.widget.ConstraintLayout>";
         }
 
-        private string NestedScrollLayoutStart()
+        private string NestedScrollLayoutStart(string tableName)
         {
             StringBuilder nestedScrollLayoutStart = new StringBuilder();
 
@@ -78,7 +78,7 @@ namespace CodeGenerator
             nestedScrollLayoutStart.AppendLine("\t\txmlns:app=\"http://schemas.android.com/apk/res-auto\"");
             nestedScrollLayoutStart.AppendLine("\t\txmlns:tools=\"http://schemas.android.com/tools\"");
             nestedScrollLayoutStart.AppendLine("\t\tandroid:layout_width=\"match_parent\"");
-            nestedScrollLayoutStart.AppendLine("\t\ttools:context=\".ui.message.MessageFragment\"");
+            nestedScrollLayoutStart.AppendLine($"\t\ttools:context=\".ui.{tableName.Decapitalise()}.{tableName}Fragment\">");
             nestedScrollLayoutStart.AppendLine("\t\tandroid:scrollbars=\"vertical\" android:layout_height=\"wrap_content\">");
 
             return nestedScrollLayoutStart.ToString();

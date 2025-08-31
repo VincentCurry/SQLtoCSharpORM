@@ -72,7 +72,7 @@ namespace CodeGenerator
 
         internal delegate string CodeForColumn(SQLTableColumn column);
 
-        internal static string ParameterNameAndType(SQLTableColumn column)
+        internal static string KotlinParameterNameAndType(SQLTableColumn column)
         {
             return $"{column.Name.Decapitalise()}: {column.kotlinDataType}";
         }
@@ -95,11 +95,11 @@ namespace CodeGenerator
                     if (!firstColumn && appendCommas)
                     {
                         columnsCode.Append(",");
-                        columnsCode.Append(singleLine ? " " : "");
+                        columnsCode.Append(singleLine ? " " : Environment.NewLine);
                     }
 
                     firstColumn = false;
-                    if (singleLine)
+                    if (singleLine || appendCommas)
                     {
                         columnsCode.Append(codeFunction(column));
                     }
@@ -111,6 +111,11 @@ namespace CodeGenerator
             }
 
             return columnsCode.ToString();
+        }
+
+        internal static void WriteToKotlinStringsFile(string key, string value)
+        {
+            string newLine = $"<string name=\\\"{key}\\\">{value}</string>";
         }
     }
 

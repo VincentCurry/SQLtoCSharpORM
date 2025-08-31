@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidApiDataSourceGenerator.cs" />
     <Compile Include="AndroidApiRepositoryGenerator.cs" />
     <Compile Include="AndroidDataAccessObjectGenerator.cs" />
     <Compile Include="AndroidDatabaseGenerator.cs" />
