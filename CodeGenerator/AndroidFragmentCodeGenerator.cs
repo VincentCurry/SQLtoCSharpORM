@@ -126,7 +126,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
             classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}ViewModel.{table.Name.Decapitalise()}DataChanged(");
             
-            classText.AppendLine(Library.TableColumnsCode(table, TextBoxesForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
+            classText.AppendLine(Library.TableColumnsCode(table, ReadControlsForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
             
             classText.AppendLine("\t\t\t\t\t)");
             classText.AppendLine("\t\t\t}");
@@ -136,14 +136,14 @@ namespace CodeGenerator
             classText.AppendLine($"\t\tsave{table.Name}Button.setOnClickListener {{");
             classText.AppendLine("\t\t\tloadingProgressBar.visibility = View.VISIBLE");
             classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}ViewModel.save{table.Name}(");
-            classText.AppendLine(Library.TableColumnsCode(table, TextBoxesForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
+            classText.AppendLine(Library.TableColumnsCode(table, ReadControlsForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
             classText.AppendLine("\t\t\t)");
             classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
 
             classText.AppendLine($"\t\tprivate fun updateUiWithSaved{table.Name}(model: {table.Name}) {{");
             classText.AppendLine($"\t\t\tval {table.Name.Decapitalise()}SavedMessage: String = getString(R.string.{table.Name.ToLower()}_saved_message)");
-            Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_saved_message", $"The {table.Name} has been successfully saved.");
+            Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_saved_message", $"The {table.Name} has been successfully saved.", _destinationFolder);
             classText.AppendLine("\t\t\tval appContext = context?.applicationContext ?: return");
             classText.AppendLine($"\t\t\tToast.makeText(appContext, {table.Name.Decapitalise()}SavedMessage, Toast.LENGTH_LONG).show()");
             classText.AppendLine("\t\t}");
@@ -177,14 +177,20 @@ namespace CodeGenerator
 
         }
 
-        private string TextBoxesForKotlin(SQLTableColumn column)
+        private string ReadControlsForKotlin(SQLTableColumn column)
         {
-            return $"{column.Name.Decapitalise()}EditText.editText?.text.toString()";
+            if (column.cSharpDataType == "DateTime")
+                return $"{column.Name.Decapitalise()}.getDate()";
+            else
+                return $"{column.Name.Decapitalise()}EditText.editText?.text.toString()";
         }
 
         private string TextEditorTextChangedListener(SQLTableColumn column)
         {
-            return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(afterTextChangedListener)";
+            if (column.cSharpDataType == "DateTime")
+                return "something different";
+            else
+                return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(afterTextChangedListener)";
         }
     }
 }

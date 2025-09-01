@@ -53,7 +53,7 @@ namespace CodeGenerator
             //classText.AppendLine("\t\t\tandroid:layout_marginBottom=\"64dp\"");
             classText.AppendLine("\t\t\tandroid:enabled=\"false\"");
             classText.AppendLine($"\t\t\tandroid:text=\"@string/{table.Name.ToLower()}_save\"");
-            Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_save", $"Save {table.Name}");
+            Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_save", $"Save {table.Name}", _destinationFolder);
             classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
@@ -126,26 +126,47 @@ namespace CodeGenerator
         {
             StringBuilder inputFieldCode = new StringBuilder();
 
-            inputFieldCode.AppendLine("\t<com.google.android.material.textfield.TextInputLayout");
-            inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{Library.LowerFirstCharacter(column.Name)}\"");
-            inputFieldCode.AppendLine("\t\tapp:shapeAppearanceOverlay=\"@style/RoundedTextBox\"");
-            inputFieldCode.AppendLine("\t\tandroid:layout_width=\"0dp\"");
-            inputFieldCode.AppendLine("\t\tandroid:layout_height=\"wrap_content\"");
-            inputFieldCode.AppendLine("\t\tandroid:layout_marginStart=\"@dimen/fragment_horizontal_margin\"");
-            inputFieldCode.AppendLine("\t\tandroid:layout_marginEnd=\"@dimen/fragment_horizontal_margin\"");
-            inputFieldCode.AppendLine($"\t\tandroid:hint=\"{column.Name}\"");
-            inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
-            inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
-            inputFieldCode.AppendLine(previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{Library.LowerFirstCharacter(previousColumn.Name)}\"");
-            inputFieldCode.AppendLine(nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\" >" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\" >");
-            inputFieldCode.AppendLine("\t\t<com.google.android.material.textfield.TextInputEditText");
-            inputFieldCode.AppendLine("\t\t\tandroid:inputType=\"text\"");
-            inputFieldCode.AppendLine("\t\t\tandroid:selectAllOnFocus=\"true\"");
-            inputFieldCode.AppendLine("\t\t\tandroid:layout_width=\"match_parent\"");
-            inputFieldCode.AppendLine("\t\t\tandroid:layout_height=\"wrap_content\"");
-            inputFieldCode.AppendLine($"\t\t\tandroid:maxLength=\"{column.MaximumLength}\" />");
-            inputFieldCode.AppendLine("\t</com.google.android.material.textfield.TextInputLayout>");
+            string previousControl = previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{Library.LowerFirstCharacter(previousColumn.Name)}\"";
+            string nextControl = nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\" >" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\" >";
 
+            if (column.cSharpDataType == "DateTime")
+            {
+
+                inputFieldCode.AppendLine("\t<DatePicker");
+                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.Name.Decapitalise()}\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_width=\"wrap_content\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_height=\"wrap_content\"");
+                inputFieldCode.AppendLine("\t\tandroid:datePickerMode=\"spinner\"");
+                inputFieldCode.AppendLine("\t\tandroid:layoutMode=\"opticalBounds\"");
+                inputFieldCode.AppendLine("\t\tandroid:calendarViewShown=\"false\"");
+                inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+                inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+                inputFieldCode.AppendLine(previousControl);
+                inputFieldCode.AppendLine(nextControl);
+
+            }
+            else
+            {
+                inputFieldCode.AppendLine("\t<com.google.android.material.textfield.TextInputLayout");
+                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{Library.LowerFirstCharacter(column.Name)}\"");
+                inputFieldCode.AppendLine("\t\tapp:shapeAppearanceOverlay=\"@style/RoundedTextBox\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_width=\"0dp\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_height=\"wrap_content\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_marginStart=\"@dimen/fragment_horizontal_margin\"");
+                inputFieldCode.AppendLine("\t\tandroid:layout_marginEnd=\"@dimen/fragment_horizontal_margin\"");
+                inputFieldCode.AppendLine($"\t\tandroid:hint=\"{column.Name}\"");
+                inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+                inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+                inputFieldCode.AppendLine(previousControl);
+                inputFieldCode.AppendLine(nextControl);
+                inputFieldCode.AppendLine("\t\t<com.google.android.material.textfield.TextInputEditText");
+                inputFieldCode.AppendLine("\t\t\tandroid:inputType=\"text\"");
+                inputFieldCode.AppendLine("\t\t\tandroid:selectAllOnFocus=\"true\"");
+                inputFieldCode.AppendLine("\t\t\tandroid:layout_width=\"match_parent\"");
+                inputFieldCode.AppendLine("\t\t\tandroid:layout_height=\"wrap_content\"");
+                inputFieldCode.AppendLine($"\t\t\tandroid:maxLength=\"{column.MaximumLength}\" />");
+                inputFieldCode.AppendLine("\t</com.google.android.material.textfield.TextInputLayout>");
+            }
             return inputFieldCode.ToString();
             
         }

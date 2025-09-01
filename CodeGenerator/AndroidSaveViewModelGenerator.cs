@@ -54,7 +54,10 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t\t_{table.Name.Decapitalise()}Result.value =");
             classText.AppendLine($"\t\t\t\t\t{table.Name}Result(success = result.data)");
             classText.AppendLine("\t\t\t} else {");
-            classText.AppendLine($"\t\t\t\t_{table.Name.Decapitalise()}Result.value = {table.Name}Result(error = R.string.{table.Name.Decapitalise()}_failed)");
+            string resourceKeySaveFailed = $"save_{table.Name.Decapitalise()}_failed";
+            classText.AppendLine($"\t\t\t\t_{table.Name.Decapitalise()}Result.value = {table.Name}Result(error = R.string.{resourceKeySaveFailed})");
+            Library.WriteToKotlinStringsFile(resourceKeySaveFailed, $"Saving {table.Name} failed", _destinationFolder);
+
             classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
@@ -75,9 +78,11 @@ namespace CodeGenerator
                     {
                         classText.AppendLine($"\t\t}} else if (!is{column.Name}Valid({column.Name.Decapitalise()})) {{");
                     }
-                    classText.AppendLine($"\t\t\t_{table.Name.Decapitalise()}Form.value = {table.Name}FormState({column.Name.Decapitalise()}Error = R.string.invalid_{column.Name.Decapitalise()})");
 
-                    Library.WriteToKotlinStringsFile($"invalid_{ column.Name.Decapitalise()}", $"Problem with {column.Name}");
+                    string invalidParameterResourcesKey = $"invalid_{table.Name}_{column.Name.Decapitalise()}";
+                    classText.AppendLine($"\t\t\t_{table.Name.Decapitalise()}Form.value = {table.Name}FormState({column.Name.Decapitalise()}Error = R.string.{invalidParameterResourcesKey})");
+
+                    Library.WriteToKotlinStringsFile(invalidParameterResourcesKey, $"Problem with {column.Name}", _destinationFolder);
 
                     firstColumn = false;
                 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -113,9 +114,25 @@ namespace CodeGenerator
             return columnsCode.ToString();
         }
 
-        internal static void WriteToKotlinStringsFile(string key, string value)
+        internal static void WriteToKotlinStringsFile(string key, string value, string destinationFolder)
         {
-            string newLine = $"<string name=\\\"{key}\\\">{value}</string>";
+            string newLine = $"<string name=\"{key}\">{value}</string>";
+
+            string filename = destinationFolder + "strings.xml";
+
+            if (File.Exists(filename))
+            {
+                File.AppendAllText(filename, Environment.NewLine + newLine);
+
+
+            } else {
+
+                TextWriter writer = File.CreateText(filename);
+
+                writer.Write(newLine);
+
+                writer.Close();
+            }
         }
     }
 
