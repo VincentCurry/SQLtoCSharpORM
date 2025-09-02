@@ -6,6 +6,7 @@ namespace CodeGenerator
 {
     public class AndroidFragmentLayoutGenerator : Generator
     {
+        bool dimensFileCreated = false;
         public AndroidFragmentLayoutGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "xml";
@@ -18,6 +19,12 @@ namespace CodeGenerator
         }
         internal override void GenerateFilePerTable(SQLTable table)
         {
+            if(!dimensFileCreated)
+            {
+                Library.WriteToKotlinDimensFile("fragment_horizontal_margin", "16dp", _destinationFolder);
+                dimensFileCreated = true;
+            }
+
             classText.AppendLine(StandardConstraintLayoutStart(table.Name));
 
             List<SQLTableColumn> columnsWithoutPrimaryKey = table.Columns.Where(co => !co.PrimaryKey).ToList();

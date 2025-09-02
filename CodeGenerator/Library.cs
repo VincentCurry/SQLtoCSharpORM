@@ -116,9 +116,19 @@ namespace CodeGenerator
 
         internal static void WriteToKotlinStringsFile(string key, string value, string destinationFolder)
         {
-            string newLine = $"<string name=\"{key}\">{value}</string>";
+            WriteKotlinResourceFile("string", key, value, destinationFolder);
+        }
 
-            string filename = destinationFolder + "strings.xml";
+        internal static void WriteToKotlinDimensFile(string key, string value, string destinationFolder)
+        {
+            WriteKotlinResourceFile("dimen", key, value, destinationFolder);
+        }
+
+        private static void WriteKotlinResourceFile(string fileType, string key, string value, string destinationFolder)
+        { 
+            string newLine = $"<{fileType} name=\"{key}\">{value}</{fileType}>";
+
+            string filename = destinationFolder + fileType + "s.xml";
 
             if (File.Exists(filename))
             {
