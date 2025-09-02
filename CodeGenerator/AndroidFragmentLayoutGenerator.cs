@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CodeGenerator
@@ -19,27 +20,29 @@ namespace CodeGenerator
         {
             classText.AppendLine(StandardConstraintLayoutStart(table.Name));
 
-            if (table.Columns.Count > 1)
+            List<SQLTableColumn> columnsWithoutPrimaryKey = table.Columns.Where(co => !co.PrimaryKey).ToList();
+
+            if (columnsWithoutPrimaryKey.Count > 1)
             {
-                for (int i = 0; i < table.Columns.Count; i++)
+                for (int i = 0; i < columnsWithoutPrimaryKey.Count; i++)
                 {
                     if (i == 0)
                     {
-                        classText.AppendLine(CreateInputField(table.Columns[i], null, table.Columns[i + 1]));
+                        classText.AppendLine(CreateInputField(columnsWithoutPrimaryKey[i], null, columnsWithoutPrimaryKey[i + 1]));
                     }
-                    else if (i == table.Columns.Count - 1)
+                    else if (i == columnsWithoutPrimaryKey.Count - 1)
                     {
-                        classText.AppendLine(CreateInputField(table.Columns[i], table.Columns[i - 1], null));
+                        classText.AppendLine(CreateInputField(columnsWithoutPrimaryKey[i], columnsWithoutPrimaryKey[i - 1], null));
                     }
                     else
                     {
-                        classText.AppendLine(CreateInputField(table.Columns[i], table.Columns[i - 1], table.Columns[i + 1]));
+                        classText.AppendLine(CreateInputField(columnsWithoutPrimaryKey[i], columnsWithoutPrimaryKey[i - 1], columnsWithoutPrimaryKey[i + 1]));
                     }
                 }
             }
             else
             {
-                classText.AppendLine(CreateInputField(null, table.Columns[0], null));
+                classText.AppendLine(CreateInputField(columnsWithoutPrimaryKey[0], null, null));
             }
 
             classText.AppendLine("\t\t<com.google.android.material.button.MaterialButton");
