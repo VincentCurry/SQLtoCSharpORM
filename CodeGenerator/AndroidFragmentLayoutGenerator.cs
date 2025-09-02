@@ -127,7 +127,7 @@ namespace CodeGenerator
             StringBuilder inputFieldCode = new StringBuilder();
 
             string previousControl = previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{Library.LowerFirstCharacter(previousColumn.Name)}\"";
-            string nextControl = nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\" >" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\" >";
+            string nextControl = nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\"" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\"";
 
             if (column.cSharpDataType == "DateTime")
             {
@@ -142,7 +142,8 @@ namespace CodeGenerator
                 inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
                 inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
                 inputFieldCode.AppendLine(previousControl);
-                inputFieldCode.AppendLine(nextControl);
+                inputFieldCode.Append(nextControl);
+                inputFieldCode.AppendLine("/>");
 
             }
             else
@@ -154,11 +155,14 @@ namespace CodeGenerator
                 inputFieldCode.AppendLine("\t\tandroid:layout_height=\"wrap_content\"");
                 inputFieldCode.AppendLine("\t\tandroid:layout_marginStart=\"@dimen/fragment_horizontal_margin\"");
                 inputFieldCode.AppendLine("\t\tandroid:layout_marginEnd=\"@dimen/fragment_horizontal_margin\"");
-                inputFieldCode.AppendLine($"\t\tandroid:hint=\"{column.Name}\"");
+                string textHintKey = $"{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_title";
+                inputFieldCode.AppendLine($"\t\tandroid:hint=\"@string/{textHintKey}\"");
+                Library.WriteToKotlinStringsFile(textHintKey, column.Name, _destinationFolder);
                 inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
                 inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
                 inputFieldCode.AppendLine(previousControl);
-                inputFieldCode.AppendLine(nextControl);
+                inputFieldCode.Append(nextControl);
+                inputFieldCode.AppendLine(" >");
                 inputFieldCode.AppendLine("\t\t<com.google.android.material.textfield.TextInputEditText");
                 inputFieldCode.AppendLine("\t\t\tandroid:inputType=\"text\"");
                 inputFieldCode.AppendLine("\t\t\tandroid:selectAllOnFocus=\"true\"");
