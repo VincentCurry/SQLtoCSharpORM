@@ -99,10 +99,10 @@ namespace CodeGenerator
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
 
-            classText.AppendLine($"\tsuspend fun get{table.Name}({table.Name.Decapitalise()}: String): Result<{table.Name}> {{");
+            classText.AppendLine($"\tsuspend fun get{table.Name}({table.Name.Decapitalise()}Id: {table.PrimaryKey.kotlinDataType}): Result<{table.Name}> {{");
             classText.AppendLine("\t\treturn try {");
             classText.AppendLine("\t\t\twithContext(Dispatchers.IO) {");
-            classText.AppendLine($"\t\t\t\tval response = HttpAccess.get(\"https://${{BuildConfig.BASE_URL}}/api/{table.Name.ToLower()}/${table.Name.Decapitalise()}\")");
+            classText.AppendLine($"\t\t\t\tval response = HttpAccess.get(\"https://${{BuildConfig.BASE_URL}}/api/{table.Name.ToLower()}/${table.Name.Decapitalise()}Id\")");
             classText.AppendLine("\t\t\t\tif (response.code() == HttpURLConnection.HTTP_OK) {");
 
             classText.AppendLine($"\t\t\t\t\tval builder = GsonBuilder()");
