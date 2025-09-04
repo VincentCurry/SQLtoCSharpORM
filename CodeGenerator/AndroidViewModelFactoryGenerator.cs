@@ -16,7 +16,7 @@ namespace CodeGenerator
 
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            classText.AppendLine($"package com.{_nameSpace}.ui.{table.Name.Decapitalise()}");
+            classText.AppendLine($"package com.{_nameSpace}.ui.{table.Name.ToLower()}");
             classText.Append(Environment.NewLine);
 
             classText.AppendLine("import androidx.lifecycle.ViewModel");
