@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace CodeGenerator
@@ -67,7 +69,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
-            classText.AppendLine($"\t\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{table.Columns[table.Columns.Count - 1].KotlinFragmentNameForPreviousField}\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintVertical_bias=\"0.2\" />");
 
             classText.AppendLine($"\t<ProgressBar");
@@ -81,8 +83,8 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\tandroid:layout_marginBottom=\"64dp\"");
             classText.AppendLine($"\t\t\tandroid:visibility=\"gone\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
-            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
-            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"@+id/{table.Columns[table.Columns.Count - 1].Name.Decapitalise()}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"@+id/{table.Columns[table.Columns.Count - 1].KotlinFragmentNameForPreviousField}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"@+id/{table.Columns[table.Columns.Count - 1].KotlinFragmentNameForNextField}\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintTop_toTopOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintVertical_bias=\"0.3\" /> ");
 
@@ -136,24 +138,47 @@ namespace CodeGenerator
         {
             StringBuilder inputFieldCode = new StringBuilder();
 
-            string previousControl = previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{Library.LowerFirstCharacter(previousColumn.Name)}\"";
-            string nextControl = nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\"" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{Library.LowerFirstCharacter(nextColumn.Name)}\"";
+            string previousControl = previousColumn == null ? "\t\tapp:layout_constraintTop_toTopOf=\"parent\"" : $"\t\tapp:layout_constraintTop_toBottomOf=\"@+id/{previousColumn.KotlinFragmentNameForPreviousField}\"";
+            string nextControl = nextColumn == null ? $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/save{column.TableName}\"" : $"\t\tapp:layout_constraintBottom_toTopOf=\"@+id/{nextColumn.KotlinFragmentNameForNextField}\"";
 
             if (column.cSharpDataType == "DateTime")
             {
+                inputFieldCode.AppendLine("\t<com.google.android.material.materialswitch.MaterialSwitch");
+                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.KotlinDateSwitchField}\"");
+                inputFieldCode.AppendLine($"\t\tandroid:layout_width=\"wrap_content\"");
+                inputFieldCode.AppendLine($"\t\tandroid:layout_height=\"wrap_content\"");
+                string dateFieldKey = $"{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_field";
+                inputFieldCode.AppendLine($"\t\tandroid:text=\"@string/{dateFieldKey}\"");
+                Library.WriteToKotlinStringsFile(dateFieldKey, $"{column.Name} Date", _destinationFolder);
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintBottom_toTopOf=\"@id/{column.Name.Decapitalise()}DateInputLayout\"");
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+                inputFieldCode.Append(previousControl);
+                inputFieldCode.AppendLine(" />");
+                inputFieldCode.Append(Environment.NewLine);
 
-                inputFieldCode.AppendLine("\t<DatePicker");
-                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.Name.Decapitalise()}\"");
-                inputFieldCode.AppendLine("\t\tandroid:layout_width=\"wrap_content\"");
-                inputFieldCode.AppendLine("\t\tandroid:layout_height=\"wrap_content\"");
-                inputFieldCode.AppendLine("\t\tandroid:datePickerMode=\"spinner\"");
-                inputFieldCode.AppendLine("\t\tandroid:layoutMode=\"opticalBounds\"");
-                inputFieldCode.AppendLine("\t\tandroid:calendarViewShown=\"false\"");
-                inputFieldCode.AppendLine("\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
-                inputFieldCode.AppendLine("\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
-                inputFieldCode.AppendLine(previousControl);
-                inputFieldCode.Append(nextControl);
-                inputFieldCode.AppendLine("/>");
+                inputFieldCode.AppendLine("\t<com.google.android.material.textfield.TextInputLayout");
+                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.KotlinDateLabelField}\"");
+                inputFieldCode.AppendLine($"\t\tandroid:layout_width=\"match_parent\"");
+                inputFieldCode.AppendLine($"\t\tandroid:layout_height=\"wrap_content\"");
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+                inputFieldCode.AppendLine($"\t\tapp:layout_constraintTop_toBottomOf=\"@id/{column.KotlinDateSwitchField}\"");
+                inputFieldCode.AppendLine(nextControl);
+                inputFieldCode.AppendLine($"\t\tandroid:visibility=\"gone\"");
+                inputFieldCode.AppendLine($"\t\tapp:endIconMode=\"custom\"");
+                inputFieldCode.AppendLine($"\t\tapp:endIconDrawable=\"@drawable/calendar_month_24px\"> <!-- use a calendar icon -->");
+
+                inputFieldCode.AppendLine($"\t\t<com.google.android.material.textfield.TextInputEditText");
+                inputFieldCode.AppendLine($"\t\t\tandroid:id=\"@+id/{column.KotlinDateTextField}\"");
+                inputFieldCode.AppendLine($"\t\t\tandroid:layout_width=\"match_parent\"");
+                inputFieldCode.AppendLine($"\t\t\tandroid:layout_height=\"wrap_content\"");
+                inputFieldCode.AppendLine($"\t\t\tandroid:focusable=\"false\"");
+                inputFieldCode.AppendLine($"\t\t\tandroid:clickable=\"true\"");
+                string selectDateHintKey = $"{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_date_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint";
+                inputFieldCode.AppendLine($"\t\t\tandroid:hint=\"@string/{selectDateHintKey}\" />");
+                Library.WriteToKotlinStringsFile(selectDateHintKey, $"Select {column.Name} date", _destinationFolder);
+                inputFieldCode.AppendLine("\t</com.google.android.material.textfield.TextInputLayout>");
 
             }
             else
