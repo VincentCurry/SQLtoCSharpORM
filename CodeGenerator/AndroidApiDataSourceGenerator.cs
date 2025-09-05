@@ -37,12 +37,22 @@ namespace CodeGenerator
 
             classText.AppendLine($"class {table.Name}DataSource {{");
 
+            if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
+            {
+                classText.AppendLine("\t@SuppressLint(\"SimpleDateFormat\")");
+            }
             classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}): Result<{table.Name}> {{");
             classText.AppendLine($"\t\tvar {table.Name.Decapitalise()}Id: {table.PrimaryKey.kotlinDataType}");
             classText.AppendLine("\t\treturn try {");
 
             classText.AppendLine("\t\t\twithContext(Dispatchers.IO) {");
-            classText.AppendLine($"\t\t\t\tval {table.Name.Decapitalise()}InputString: String = \"{{{Library.TableColumnsCode(table, CreateJsonSerialization, false, true, true)}}}\"");
+
+            if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
+            {
+                classText.AppendLine($"\t\t\t\tval isoDateFormat: SimpleDateFormat = SimpleDateFormat(com.{_nameSpace}.isoDateFormat)");
+            }
+
+            classText.AppendLine($"\t\t\t\tval {table.Name.Decapitalise()}InputString: String = \"{{{Library.TableColumnsCode(table, CreateJsonSerialization, includePrimaryKey: false, appendCommas:true, singleLine: true)}}}\"");
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"\t\t\t\tval {table.Name.Decapitalise()}Response: Response = HttpAccess.postSigned(\"https://${{BuildConfig.BASE_URL}}/api/{table.Name.ToLower()}\", {table.Name.Decapitalise()}InputString)");
@@ -129,7 +139,7 @@ namespace CodeGenerator
 
         private string CreateJsonSerialization(SQLTableColumn column) 
         {
-            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.Name.Decapitalise()}}}\\\"";
+            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{(column.kotlinDataType == "Date" ? $"isoDateFormat.format({column.Name.Decapitalise()})" : column.Name.Decapitalise())}}}\\\"";
         }
 
         private string ParameterForObjectCreation(SQLTableColumn column)
