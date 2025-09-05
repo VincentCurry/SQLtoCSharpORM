@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Text;
 
 namespace CodeGenerator
 {
@@ -68,13 +68,10 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t.get({table.Name}ViewModel::class.java)");
             classText.AppendLine(Environment.NewLine);
 
-            foreach (SQLTableColumn column in table.Columns)
-            {
-                if (!column.PrimaryKey)
-                {
-                    classText.AppendLine($"\t\tval {column.Name.Decapitalise()}EditText = binding.{column.Name.Decapitalise()}");
-                }
-            }
+            classText.AppendLine(Library.TableColumnsCode(table, FragmentBinding, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.Append(Environment.NewLine);
+            classText.AppendLine(Library.TableColumnsCode(table, DateChooserDisplayAndSetOfDateValue, includePrimaryKey: false, appendCommas: false, singleLine: false));
+
             classText.AppendLine($"\t\tval save{table.Name}Button = binding.save{table.Name}");
             classText.AppendLine("\t\tval loadingProgressBar = binding.loading");
             classText.AppendLine(Environment.NewLine);
@@ -125,9 +122,9 @@ namespace CodeGenerator
 
             classText.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
             classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}ViewModel.{table.Name.Decapitalise()}DataChanged(");
-            
+
             classText.AppendLine(Library.TableColumnsCode(table, ReadControlsForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
-            
+
             classText.AppendLine("\t\t\t\t\t)");
             classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
@@ -177,9 +174,46 @@ namespace CodeGenerator
 
         }
 
+        private string FragmentBinding(SQLTableColumn column)
+        {
+            if (column.DataType == SQLDataTypes.dateTime)
+            {
+                return $"val {column.Name.Decapitalise()}Switch = binding.{column.KotlinDateSwitchField}\r\nval {column.Name.Decapitalise()}EditText = binding.{column.KotlinDateTextField}\r\nval {column.Name.Decapitalise()}InputLayout = binding.{column.KotlinDateLabelField}";
+            }
+            else
+            {
+                return $"\t\tval {column.Name.Decapitalise()}EditText = binding.{column.Name.Decapitalise()}";
+            }
+        }
+
+        private string DateChooserDisplayAndSetOfDateValue(SQLTableColumn column)
+        {
+            if (column.DataType == SQLDataTypes.dateTime)
+            {
+                StringBuilder chooserText = new StringBuilder();
+                chooserText.AppendLine($"\t\t{column.KotlinDateSwitchField}.setOnCheckedChangeListener {{ _,isChecked ->");
+                chooserText.AppendLine($"\t\t\t{column.KotlinDateLabelField}.visibility = if (isChecked) View.VISIBLE else View.GONE");
+
+                chooserText.AppendLine($"\t\t}}");
+                chooserText.Append(Environment.NewLine);
+                chooserText.AppendLine($"\t\t{column.KotlinDateLabelField}.setEndIconOnClickListener({{");
+                chooserText.AppendLine($"\t\t\tshowDatePicker(null, \"Pick start date\" ) {{ millis ->");
+                chooserText.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Date = Date(millis)");
+                chooserText.AppendLine($"\t\t\t\tval sdf = SimpleDateFormat(\"dd MMM yyyy\", Locale.getDefault())");
+                chooserText.AppendLine($"\t\t\t\tval date = {column.Name.Decapitalise()}Date?.let {{ it1 -> sdf.format(it1) }}");
+                chooserText.AppendLine($"\t\t\t\t{column.KotlinDateTextField}.setText(date)");
+                chooserText.AppendLine("\t\t\t}");
+                chooserText.Append("\t\t})");
+                chooserText.Append(Environment.NewLine);
+
+                return chooserText.ToString();
+            }
+            else { return ""; }
+        }
+
         private string ReadControlsForKotlin(SQLTableColumn column)
         {
-            if (column.cSharpDataType == "DateTime")
+            if (column.DataType == SQLDataTypes.dateTime)
                 return $"{column.Name.Decapitalise()}.getDate()";
             else
                 return $"{column.Name.Decapitalise()}EditText.editText?.text.toString()";
@@ -187,7 +221,7 @@ namespace CodeGenerator
 
         private string TextEditorTextChangedListener(SQLTableColumn column)
         {
-            if (column.cSharpDataType == "DateTime")
+            if (column.DataType == SQLDataTypes.dateTime)
                 return "something different";
             else
                 return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(afterTextChangedListener)";
