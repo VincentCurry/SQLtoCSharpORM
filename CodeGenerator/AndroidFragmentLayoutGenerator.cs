@@ -143,19 +143,22 @@ namespace CodeGenerator
 
             if (column.cSharpDataType == "DateTime")
             {
-                inputFieldCode.AppendLine("\t<com.google.android.material.materialswitch.MaterialSwitch");
-                inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.KotlinDateSwitchField}\"");
-                inputFieldCode.AppendLine($"\t\tandroid:layout_width=\"wrap_content\"");
-                inputFieldCode.AppendLine($"\t\tandroid:layout_height=\"wrap_content\"");
-                string dateFieldKey = $"{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_field";
-                inputFieldCode.AppendLine($"\t\tandroid:text=\"@string/{dateFieldKey}\"");
-                Library.WriteToKotlinStringsFile(dateFieldKey, $"{column.Name} Date", _destinationFolder);
-                inputFieldCode.AppendLine($"\t\tapp:layout_constraintBottom_toTopOf=\"@id/{column.Name.Decapitalise()}DateInputLayout\"");
-                inputFieldCode.AppendLine($"\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
-                inputFieldCode.AppendLine($"\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
-                inputFieldCode.Append(previousControl);
-                inputFieldCode.AppendLine(" />");
-                inputFieldCode.Append(Environment.NewLine);
+                if (column.Nullable)
+                {
+                    inputFieldCode.AppendLine("\t<com.google.android.material.materialswitch.MaterialSwitch");
+                    inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.KotlinDateSwitchField}\"");
+                    inputFieldCode.AppendLine($"\t\tandroid:layout_width=\"wrap_content\"");
+                    inputFieldCode.AppendLine($"\t\tandroid:layout_height=\"wrap_content\"");
+                    string dateFieldKey = $"{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_field";
+                    inputFieldCode.AppendLine($"\t\tandroid:text=\"@string/{dateFieldKey}\"");
+                    Library.WriteToKotlinStringsFile(dateFieldKey, $"{column.Name} Date", _destinationFolder);
+                    inputFieldCode.AppendLine($"\t\tapp:layout_constraintBottom_toTopOf=\"@id/{column.Name.Decapitalise()}DateInputLayout\"");
+                    inputFieldCode.AppendLine($"\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+                    inputFieldCode.AppendLine($"\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
+                    inputFieldCode.Append(previousControl);
+                    inputFieldCode.AppendLine(" />");
+                    inputFieldCode.Append(Environment.NewLine);
+                }
 
                 inputFieldCode.AppendLine("\t<com.google.android.material.textfield.TextInputLayout");
                 inputFieldCode.AppendLine($"\t\tandroid:id=\"@+id/{column.KotlinDateLabelField}\"");
@@ -163,9 +166,9 @@ namespace CodeGenerator
                 inputFieldCode.AppendLine($"\t\tandroid:layout_height=\"wrap_content\"");
                 inputFieldCode.AppendLine($"\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
                 inputFieldCode.AppendLine($"\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
-                inputFieldCode.AppendLine($"\t\tapp:layout_constraintTop_toBottomOf=\"@id/{column.KotlinDateSwitchField}\"");
+                inputFieldCode.AppendLine(column.Nullable ? $"\t\tapp:layout_constraintTop_toBottomOf=\"@id/{column.KotlinDateSwitchField}\"": previousControl);
                 inputFieldCode.AppendLine(nextControl);
-                inputFieldCode.AppendLine($"\t\tandroid:visibility=\"gone\"");
+                inputFieldCode.AppendLine($"\t\tandroid:visibility=\"{(column.Nullable ? "gone" : "visible")}\"");
                 inputFieldCode.AppendLine($"\t\tapp:endIconMode=\"custom\"");
                 inputFieldCode.AppendLine($"\t\tapp:endIconDrawable=\"@drawable/calendar_month_24px\"> <!-- use a calendar icon -->");
 

@@ -191,11 +191,15 @@ namespace CodeGenerator
             if (column.DataType == SQLDataTypes.dateTime)
             {
                 StringBuilder chooserText = new StringBuilder();
-                chooserText.AppendLine($"\t\t{column.KotlinDateSwitchField}.setOnCheckedChangeListener {{ _,isChecked ->");
-                chooserText.AppendLine($"\t\t\t{column.KotlinDateLabelField}.visibility = if (isChecked) View.VISIBLE else View.GONE");
 
-                chooserText.AppendLine($"\t\t}}");
-                chooserText.Append(Environment.NewLine);
+                if (column.Nullable)
+                {
+                    chooserText.AppendLine($"\t\t{column.KotlinDateSwitchField}.setOnCheckedChangeListener {{ _,isChecked ->");
+                    chooserText.AppendLine($"\t\t\t{column.KotlinDateLabelField}.visibility = if (isChecked) View.VISIBLE else View.GONE");
+
+                    chooserText.AppendLine($"\t\t}}");
+                    chooserText.Append(Environment.NewLine);
+                }
                 chooserText.AppendLine($"\t\t{column.KotlinDateLabelField}.setEndIconOnClickListener({{");
                 chooserText.AppendLine($"\t\t\tshowDatePicker(null, \"Pick start date\" ) {{ millis ->");
                 chooserText.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Date = Date(millis)");
