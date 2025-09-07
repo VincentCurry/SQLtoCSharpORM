@@ -86,7 +86,7 @@ namespace CodeGenerator
 
             foreach (SQLTableColumn column in table.Columns)
             {
-                if (!column.PrimaryKey && (!column.Nullable || column.cSharpDataType == "string"))
+                if (!column.PrimaryKey && !column.Nullable)
                 {
                     classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}FormState.{column.Name.Decapitalise()}Error?.let {{");
                     classText.AppendLine($"\t\t\t\t\t{column.Name.Decapitalise()}EditText.error = getString(it)");
