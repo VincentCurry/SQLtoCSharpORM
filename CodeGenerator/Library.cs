@@ -75,7 +75,7 @@ namespace CodeGenerator
 
         internal static string KotlinParameterNameAndType(SQLTableColumn column)
         {
-            return $"{column.Name.Decapitalise()}: {column.kotlinDataType}";
+            return $"{column.Name.Decapitalise()}: {column.kotlinDataType}" + (column.Nullable ? "?" : "");
         }
         internal static string ColumnNameDecapitalised(SQLTableColumn column)
         {
