@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CodeGenerator
@@ -44,6 +45,8 @@ namespace CodeGenerator
             classText.AppendLine($"\tprivate var _binding: Fragment{table.Name}Binding? = null");
             classText.Append(Environment.NewLine);
 
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.kotlinDataType == kotlinDataTypes.date), DateVariablesAtFragmentLevel, includePrimaryKey: false, appendCommas: false, singleLine: false));
+
             classText.AppendLine("// This property is only valid between onCreateView and onDestroyView.");
             classText.AppendLine("\tprivate val binding get() = _binding!!");
             classText.Append(Environment.NewLine);
@@ -66,15 +69,14 @@ namespace CodeGenerator
             classText.AppendLine("\t\tsuper.onViewCreated(view, savedInstanceState)");
             classText.AppendLine($"\t\t{table.Name.Decapitalise()}ViewModel = ViewModelProvider(requireActivity(), {table.Name}ViewModelFactory())");
             classText.AppendLine($"\t\t\t.get({table.Name}ViewModel::class.java)");
-            classText.AppendLine(Environment.NewLine);
+            classText.Append(Environment.NewLine);
 
             classText.AppendLine(Library.TableColumnsCode(table, FragmentBinding, includePrimaryKey: false, appendCommas: false, singleLine: false));
-            classText.Append(Environment.NewLine);
-            classText.AppendLine(Library.TableColumnsCode(table, DateChooserDisplayAndSetOfDateValue, includePrimaryKey: false, appendCommas: false, singleLine: false));
 
             classText.AppendLine($"\t\tval save{table.Name}Button = binding.save{table.Name}");
             classText.AppendLine("\t\tval loadingProgressBar = binding.loading");
-            classText.AppendLine(Environment.NewLine);
+            classText.Append(Environment.NewLine);
+            classText.AppendLine(Library.TableColumnsCode(table, DateChooserDisplayAndSetOfDateValue, includePrimaryKey: false, appendCommas: false, singleLine: false));
 
 
             classText.AppendLine($"\t\t{table.Name.Decapitalise()}ViewModel.{table.Name.Decapitalise()}FormState.observe(viewLifecycleOwner,");
@@ -86,7 +88,7 @@ namespace CodeGenerator
 
             foreach (SQLTableColumn column in table.Columns)
             {
-                if (!column.PrimaryKey && !column.Nullable)
+                if (column.IsToBeValidated && column.kotlinDataType == kotlinDataTypes.strings)
                 {
                     classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}FormState.{column.Name.Decapitalise()}Error?.let {{");
                     classText.AppendLine($"\t\t\t\t\t{column.Name.Decapitalise()}EditText.error = getString(it)");
@@ -218,7 +220,7 @@ namespace CodeGenerator
         private string ReadControlsForKotlin(SQLTableColumn column)
         {
             if (column.DataType == SQLDataTypes.dateTime)
-                return $"{column.Name.Decapitalise()}.getDate()";
+                return $"{column.Name.Decapitalise()}Date";
             else
                 return $"{column.Name.Decapitalise()}EditText.editText?.text.toString()";
         }
@@ -229,6 +231,18 @@ namespace CodeGenerator
                 return "something different";
             else
                 return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(afterTextChangedListener)";
+        }
+
+        private string DateVariablesAtFragmentLevel(SQLTableColumn column)
+        {
+            if(column.Nullable)
+            {
+                return $"private var {column.Name.Decapitalise()}Date: Date? = null";
+            }
+            else
+            {
+                return $"private lateinit var {column.Name.Decapitalise()}Date: Date";
+            }
         }
     }
 }

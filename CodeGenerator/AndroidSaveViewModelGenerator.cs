@@ -63,7 +63,7 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated && co.kotlinDataType == kotlinDataTypes.strings), Library.KotlinParameterNameAndType, false, true, true)}) {{");
 
             bool firstColumn = true;
             foreach(SQLTableColumn column in table.Columns)
@@ -98,7 +98,7 @@ namespace CodeGenerator
                 if (tableColumn.IsToBeValidated)
                 {
                     classText.AppendLine($"\tprivate fun is{tableColumn.Name}Valid({tableColumn.Name.Decapitalise()}: String): Boolean {{");
-                    if(!tableColumn.Nullable && tableColumn.cSharpDataType == "string")
+                    if(!tableColumn.Nullable && tableColumn.kotlinDataType == kotlinDataTypes.strings)
                     {
 
                         classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.isNotBlank() && {tableColumn.Name.Decapitalise()}.length < {tableColumn.MaximumLength}");
@@ -107,7 +107,7 @@ namespace CodeGenerator
                     {
                          classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.isNotBlank()");
                     }
-                    else if(tableColumn.cSharpDataType == "string")
+                    else if(tableColumn.kotlinDataType == kotlinDataTypes.strings)
                     {
                         classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.length < {tableColumn.MaximumLength}");
                     }

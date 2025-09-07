@@ -84,11 +84,16 @@ namespace CodeGenerator
 
         internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
         {
+            return TableColumnsCode(table.Columns, codeFunction, includePrimaryKey, appendCommas, singleLine);
+        }
+
+        internal static string TableColumnsCode(IEnumerable<SQLTableColumn> columns, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
+        {
             StringBuilder columnsCode = new StringBuilder();
 
             bool firstColumn = true;
 
-            foreach (SQLTableColumn column in table.Columns)
+            foreach (SQLTableColumn column in columns)
             {
 
                 if (!column.PrimaryKey || includePrimaryKey)

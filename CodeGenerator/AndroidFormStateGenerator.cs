@@ -19,7 +19,7 @@ namespace CodeGenerator
             classText.AppendLine($"data class {table.Name}FormState(");
             foreach (SQLTableColumn column in table.Columns)
             {
-                if (!column.PrimaryKey && (!column.Nullable || column.cSharpDataType == "string"))
+                if (!column.PrimaryKey && (!column.Nullable || column.kotlinDataType == kotlinDataTypes.strings))
                 {
                     classText.AppendLine($"\tval {column.Name.Decapitalise()}Error: Int? = null,");
                 }

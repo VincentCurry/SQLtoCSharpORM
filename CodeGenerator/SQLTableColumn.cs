@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -27,7 +26,7 @@ namespace CodeGenerator
 
         public bool IsToBeValidated
         {
-            get { return !this.PrimaryKey && (!this.Nullable || this.cSharpDataType == "string"); }
+            get { return !this.PrimaryKey && !this.Nullable; }
         }
 
         public string KotlinFragmentNameForPreviousField
