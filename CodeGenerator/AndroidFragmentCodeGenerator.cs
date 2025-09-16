@@ -47,7 +47,6 @@ namespace CodeGenerator
 
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.kotlinDataType == kotlinDataTypes.date), DateVariablesAtFragmentLevel, includePrimaryKey: false, appendCommas: false, singleLine: false));
 
-            classText.AppendLine("// This property is only valid between onCreateView and onDestroyView.");
             classText.AppendLine("\tprivate val binding get() = _binding!!");
             classText.Append(Environment.NewLine);
 
@@ -84,15 +83,12 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t\tif ({table.Name.Decapitalise()}FormState == null) {{");
             classText.AppendLine("\t\t\t\t\treturn@Observer");
             classText.AppendLine("\t\t\t\t}");
-            classText.AppendLine($"\t\t\t\tsave{table.Name}Button.isEnabled = {table.Name.Decapitalise()}FormState.isDataValid");
 
             foreach (SQLTableColumn column in table.Columns)
             {
                 if (column.IsToBeValidated && column.kotlinDataType == kotlinDataTypes.strings)
                 {
-                    classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}FormState.{column.Name.Decapitalise()}Error?.let {{");
-                    classText.AppendLine($"\t\t\t\t\t{column.Name.Decapitalise()}EditText.error = getString(it)");
-                    classText.AppendLine("\t\t\t\t}");
+                    classText.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}EditText.error = {table.Name.Decapitalise()}FormState.{column.Name.Decapitalise()}Error?.let {{ getString(it) }}");
                 }
             }
             classText.AppendLine("\t\t\t})");
@@ -106,31 +102,14 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t\t\tshowSave{table.Name}Failed(it)");
             classText.AppendLine("\t\t\t\t}");
             classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}Result.success?.let {{");
-            classText.AppendLine($"\t\t\t\t\t\tupdateUiWithSaved{table.Name}(it)");
+            classText.AppendLine($"\t\t\t\t\tupdateUiWithSaved{table.Name}(it)");
 
 
-            classText.AppendLine("\t\t\t\t\t\t}");
-            classText.AppendLine("\t\t\t\t})");
+            classText.AppendLine("\t\t\t\t}");
+            classText.AppendLine("\t\t\t})");
             classText.Append(Environment.NewLine);
-
-            classText.AppendLine("\t\tval afterTextChangedListener = object : TextWatcher {");
-            classText.AppendLine("\t\t\toverride fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {");
-            classText.AppendLine("\t\t\t\t// ignore");
-            classText.AppendLine("\t\t\t}");
-
-            classText.AppendLine("\t\t\toverride fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {");
-            classText.AppendLine("\t\t\t\t// ignore");
-            classText.AppendLine("\t\t\t}");
-
-            classText.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
-            classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}ViewModel.{table.Name.Decapitalise()}DataChanged(");
-
-            classText.AppendLine(Library.TableColumnsCode(table, ReadControlsForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
-
-            classText.AppendLine("\t\t\t\t\t)");
-            classText.AppendLine("\t\t\t}");
-            classText.AppendLine("\t\t}");
-            classText.AppendLine(Library.TableColumnsCode(table, TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValueChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));            
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine(Environment.NewLine);
             classText.AppendLine($"\t\tsave{table.Name}Button.setOnClickListener {{");
             classText.AppendLine("\t\t\tloadingProgressBar.visibility = View.VISIBLE");
@@ -172,6 +151,11 @@ namespace CodeGenerator
 
             classText.AppendLine("\t\treturn sharedPrefs.getString(sharedPreferenceName, null)!!");
             classText.AppendLine("\t}");
+
+            if (table.Columns.Any(col => col.kotlinDataType == kotlinDataTypes.date))
+            {
+                classText.AppendLine("\r\n\r\n\tprivate fun showDatePicker(\r\n\t\tinitialDate: Long? = null,\r\n\t\ttitle: String = \"Select a date\",\r\n\t\tonDateSelected: (Long) -> Unit\r\n\t) {\r\n\t\tval picker = MaterialDatePicker.Builder.datePicker()\r\n\t\t\t.setTitleText(title)\r\n\t\t\t.setSelection(initialDate ?: MaterialDatePicker.todayInUtcMilliseconds())\r\n\t\t\t.build()\r\n\r\n\t\tpicker.addOnPositiveButtonClickListener { millis ->\r\n\t\t\tonDateSelected(millis)\r\n\t\t}\r\n\r\n\t\tactivity?.let { picker.show(it.supportFragmentManager, \"MATERIAL_DATE_PICKER\") }\r\n\t}");
+            }
             classText.AppendLine("}");
 
         }
@@ -203,9 +187,9 @@ namespace CodeGenerator
                     chooserText.Append(Environment.NewLine);
                 }
                 chooserText.AppendLine($"\t\t{column.KotlinDateLabelField}.setEndIconOnClickListener({{");
-                chooserText.AppendLine($"\t\t\tshowDatePicker(null, \"Pick start date\" ) {{ millis ->");
+                chooserText.AppendLine($"\t\t\tshowDatePicker(null, getString(R.string.{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_date_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint)) {{ millis ->");
                 chooserText.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Date = Date(millis)");
-                chooserText.AppendLine($"\t\t\t\tval sdf = SimpleDateFormat(\"dd MMM yyyy\", Locale.getDefault())");
+                chooserText.AppendLine($"\t\t\t\tval sdf = SimpleDateFormat(getString(R.string.date_display_format), Locale.getDefault())");
                 chooserText.AppendLine($"\t\t\t\tval date = {column.Name.Decapitalise()}Date?.let {{ it1 -> sdf.format(it1) }}");
                 chooserText.AppendLine($"\t\t\t\t{column.KotlinDateTextField}.setText(date)");
                 chooserText.AppendLine("\t\t\t}");
@@ -227,10 +211,10 @@ namespace CodeGenerator
 
         private string TextEditorTextChangedListener(SQLTableColumn column)
         {
-            if (column.DataType == SQLDataTypes.dateTime)
-                return "something different";
+            if (column.DataType != SQLDataTypes.dateTime)
+                return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(after{column.Name}ChangedListener)";
             else
-                return $"{column.Name.Decapitalise()}EditText.editText?.addTextChangedListener(afterTextChangedListener)";
+                return "";
         }
 
         private string DateVariablesAtFragmentLevel(SQLTableColumn column)
@@ -243,6 +227,34 @@ namespace CodeGenerator
             {
                 return $"private lateinit var {column.Name.Decapitalise()}Date: Date";
             }
+        }
+
+        private string ValueChangedListener(SQLTableColumn column)
+        {
+            if(column.IsToBeValidated)
+            {
+                StringBuilder textChangedHandler = new StringBuilder();
+
+                textChangedHandler.AppendLine($"val after{column.Name}ChangedListener = object : TextWatcher {{");
+                textChangedHandler.AppendLine("\t\t\toverride fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {");
+                textChangedHandler.AppendLine("\t\t\t\t// ignore");
+                textChangedHandler.AppendLine("\t\t\t}");
+                textChangedHandler.AppendLine("\t\t\toverride fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {");
+                textChangedHandler.AppendLine("\t\t\t\t// ignore");
+                textChangedHandler.AppendLine("\t\t\t}");
+                textChangedHandler.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
+                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.Text, {column.Name.Decapitalise()}EditText.editText?.text.toString())");
+                textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = voucherViewModel.validateAll(mapOf({Library.TableColumnsCode(column.ParentTable.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)}))");
+                textChangedHandler.AppendLine("\t\t\t}\r\n\t\t}");
+
+                return textChangedHandler.ToString();
+            }
+            return "";
+        }
+
+        private string MapOfColumnsToBeValidated(SQLTableColumn column)
+        {
+            return $"VoucherFormField.{column.Name} to {column.Name.Decapitalise()}EditText.editText?.text.toString()";
         }
     }
 }
