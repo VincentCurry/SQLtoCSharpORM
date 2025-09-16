@@ -85,6 +85,10 @@ namespace CodeGenerator
         {
             return column.Name; 
         }
+        internal static string ColumnNameDecapitalisedWithError(SQLTableColumn column)
+        {
+            return $"{column.Name.Decapitalise()}Error";
+        }
 
         internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
         {

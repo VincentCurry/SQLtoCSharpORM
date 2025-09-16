@@ -18,17 +18,16 @@ namespace CodeGenerator
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"data class {table.Name}FormState(");
-            foreach (SQLTableColumn column in table.Columns)
-            {
-                if (!column.PrimaryKey && (!column.Nullable || column.kotlinDataType == kotlinDataTypes.strings))
-                {
-                    classText.AppendLine($"\tval {column.Name.Decapitalise()}Error: Int? = null,");
-                }
-            }
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => !co.Nullable || co.kotlinDataType == kotlinDataTypes.strings), FormStateErrorPropertyDefinition, includePrimaryKey: false, appendCommas: true, singleLine: false));
             classText.AppendLine(") {");
-            classText.AppendLine($"\tfun allErrors(): List<Int?> = listOf({Library.TableColumnsCode(table.Columns.Where(co => !co.Nullable || co.kotlinDataType == kotlinDataTypes.strings), Library.ColumnNameDecapitalised, includePrimaryKey: false, appendCommas: true, singleLine: true)})");
+            classText.AppendLine($"\tfun allErrors(): List<Int?> = listOf({Library.TableColumnsCode(table.Columns.Where(co => !co.Nullable || co.kotlinDataType == kotlinDataTypes.strings), Library.ColumnNameDecapitalisedWithError, includePrimaryKey: false, appendCommas: true, singleLine: true)})");
             classText.AppendLine("}");
 
+        }
+
+        private string FormStateErrorPropertyDefinition(SQLTableColumn column)
+        {
+            return $"\tval {column.Name.Decapitalise()}Error: Int? = null";
         }
     }
 }
