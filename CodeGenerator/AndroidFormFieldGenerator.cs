@@ -33,7 +33,6 @@ namespace CodeGenerator
         private string ValidationFunction(SQLTableColumn column)
         {
             string validationFunction = "";
-            //{text -> if (text.isBlank()) R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()} else null}
             if (!column.Nullable && column.kotlinDataType == kotlinDataTypes.strings)
             {
 
