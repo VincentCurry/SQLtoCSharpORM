@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeGenerator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,7 +32,23 @@ namespace CodeGenerator
 
         private string ValidationFunction(SQLTableColumn column)
         {
-            return $"object {column.Name}: {column.TableName}FormField<String>( validator = {{text -> if (text.isBlank()) R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()} else null}})";
+            string validationFunction = "";
+            //{text -> if (text.isBlank()) R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()} else null}
+            if (!column.Nullable && column.kotlinDataType == kotlinDataTypes.strings)
+            {
+
+                validationFunction = $"text -> if (text.isNotBlank() && text.length < {column.MaximumLength}) null else R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()}";
+            }
+            else if (!column.Nullable)
+            {
+                validationFunction = $"text -> if (text.isNotBlank()) null else R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()}";
+            }
+            else if (column.kotlinDataType == kotlinDataTypes.strings)
+            {
+                validationFunction = $"text -> if (text.length < {column.MaximumLength}) null else R.string.invalid_{column.TableName.Decapitalise()}_{column.Name.Decapitalise()}";
+            }
+            
+            return $"object {column.Name}: {column.TableName}FormField<String>( validator = {{{validationFunction}}})";
         }
     }
 }

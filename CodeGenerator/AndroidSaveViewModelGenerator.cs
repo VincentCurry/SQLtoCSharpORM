@@ -82,7 +82,7 @@ namespace CodeGenerator
                     string invalidParameterResourcesKey = $"invalid_{table.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}";
                     classText.AppendLine($"\t\t\t_{table.Name.Decapitalise()}Form.value = {table.Name}FormState({column.Name.Decapitalise()}Error = R.string.{invalidParameterResourcesKey})");
 
-                    Library.WriteToKotlinStringsFile(invalidParameterResourcesKey, $"Problem with {column.Name}", _destinationFolder);
+                    Library.WriteToKotlinStringsFile(invalidParameterResourcesKey, $"{table.Name} requires a {column.Name}{(column.kotlinDataType == kotlinDataTypes.date ? " date" : "")}", _destinationFolder);
 
                     firstColumn = false;
                 }
@@ -92,30 +92,6 @@ namespace CodeGenerator
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
-
-            foreach (SQLTableColumn tableColumn in table.Columns)
-            {
-                if (tableColumn.IsToBeValidated)
-                {
-                    classText.AppendLine($"\tprivate fun is{tableColumn.Name}Valid({tableColumn.Name.Decapitalise()}: String): Boolean {{");
-                    if(!tableColumn.Nullable && tableColumn.kotlinDataType == kotlinDataTypes.strings)
-                    {
-
-                        classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.isNotBlank() && {tableColumn.Name.Decapitalise()}.length < {tableColumn.MaximumLength}");
-                    }
-                    else if (!tableColumn.Nullable)
-                    {
-                         classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.isNotBlank()");
-                    }
-                    else if(tableColumn.kotlinDataType == kotlinDataTypes.strings)
-                    {
-                        classText.AppendLine($"\t\t\treturn {tableColumn.Name.Decapitalise()}.length < {tableColumn.MaximumLength}");
-                    }
-
-                    classText.AppendLine("}");
-                    classText.Append(Environment.NewLine);
-                }
-            }
             classText.AppendLine("}");
 
         }
