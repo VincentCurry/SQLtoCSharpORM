@@ -16,7 +16,10 @@ namespace CodeGenerator
         {
             classText.AppendLine($"package com.{_nameSpace}.data");
             classText.Append(Environment.NewLine);
-
+            if(table.Columns.Any(co => co.cSharpDataType == "DateTime"))
+            {
+                classText.AppendLine("import android.annotation.SuppressLint");
+            }
             classText.AppendLine("import com.google.gson.GsonBuilder");
             classText.AppendLine("import com.google.gson.reflect.TypeToken");
             classText.AppendLine($"import com.{_nameSpace}.BuildConfig");
@@ -29,6 +32,7 @@ namespace CodeGenerator
 
             if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
             {
+                classText.AppendLine("import java.text.SimpleDateFormat");
                 classText.AppendLine("import java.util.Date");
             }
             classText.AppendLine("import okhttp3.Response");
