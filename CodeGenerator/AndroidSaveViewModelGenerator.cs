@@ -63,38 +63,40 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun {table.Name.Decapitalise()}DataChanged({Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated && co.kotlinDataType == kotlinDataTypes.strings), Library.KotlinParameterNameAndType, false, true, true)}) {{");
-
-            bool firstColumn = true;
-            foreach(SQLTableColumn column in table.Columns)
-            {
-                if(column.IsToBeValidated)
-                {
-                    if (firstColumn)
-                    {
-                        classText.AppendLine($"\t\tif (!is{column.Name}Valid({column.Name.Decapitalise()})) {{");
-                    }
-                    else
-                    {
-                        classText.AppendLine($"\t\t}} else if (!is{column.Name}Valid({column.Name.Decapitalise()})) {{");
-                    }
-
-                    string invalidParameterResourcesKey = $"invalid_{table.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}";
-                    classText.AppendLine($"\t\t\t_{table.Name.Decapitalise()}Form.value = {table.Name}FormState({column.Name.Decapitalise()}Error = R.string.{invalidParameterResourcesKey})");
-
-                    Library.WriteToKotlinStringsFile(invalidParameterResourcesKey, $"{table.Name} requires a {column.Name}{(column.kotlinDataType == kotlinDataTypes.date ? " date" : "")}", _destinationFolder);
-
-                    firstColumn = false;
-                }
-            }
-            classText.AppendLine("\t\t} else {");
-            classText.AppendLine($"\t\t\t_{table.Name.Decapitalise()}Form.value = {table.Name}FormState(isDataValid = true)");
-            classText.AppendLine("\t\t}");
+            classText.AppendLine($"fun validateField(field: {table.Name}FormField<*>, value: String) {{");
+            classText.AppendLine($"\t\tval current = _{table.Name.Decapitalise()}Form.value ?: {table.Name}FormState()");
+            classText.AppendLine($"\t\t_{table.Name.Decapitalise()}Form.value = when (field) {{");
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateField, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.AppendLine("\t\t}}");
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
+
+            classText.AppendLine($"fun validateAll(values: Map<{table.Name}FormField<*>, String>): Boolean {{");
+            classText.AppendLine("");
+            classText.AppendLine("\t\tvar newState = _formState.value");
+            classText.AppendLine("\t\tfor ((field, value) in values) {{");
+            classText.AppendLine("");
+            classText.AppendLine("\t\t\tnewState = when (field) {{");
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateAllField, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.AppendLine("\t\t\t}}");
+            classText.AppendLine("\t\t}}");
+            classText.AppendLine("");
+            classText.AppendLine("\t\t_formState.value = newState");
+            classText.AppendLine("\t\treturn newState.allErrors().all {{ it == null }}");
+            classText.AppendLine("\t}}");
+
+
             classText.AppendLine("}");
 
         }
+        private string ValidateField(SQLTableColumn column)
+        {
+            return $"\t\t\tis {column.TableName}FormField.{column.Name}  -> current.copy({column.Name.Decapitalise()}Error = field.validator(value as String))";
+        }
 
+        private string ValidateAllField(SQLTableColumn column)
+        {
+            return $"\t\t\t\tis {column.TableName}FormField.{column.Name} -> newState.copy({column.Name.Decapitalise()}Error = field.validator(value as String))";
+        }
     }
 }
