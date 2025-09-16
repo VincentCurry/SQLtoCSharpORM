@@ -25,6 +25,7 @@ namespace CodeGenerator
             classText.AppendLine($"import com.{_nameSpace}.R");
             classText.AppendLine($"import com.{_nameSpace}.data.{table.Name}Repository");
             classText.AppendLine($"import com.{_nameSpace}.data.Result");
+            classText.AppendLine("import kotlinx.coroutines.flow.MutableStateFlow");
             classText.AppendLine("import kotlinx.coroutines.launch");
             if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
             {
@@ -37,6 +38,7 @@ namespace CodeGenerator
 
             classText.AppendLine($"\tprivate val _{table.Name.Decapitalise()}Form = MutableLiveData<{table.Name}FormState>()");
             classText.AppendLine($"\tval {table.Name.Decapitalise()}FormState: LiveData<{table.Name}FormState> = _{table.Name.Decapitalise()}Form");
+            classText.AppendLine($"\tprivate val _formState = MutableStateFlow({table.Name}FormState())");
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"\tprivate val _{table.Name.Decapitalise()}Result = MutableLiveData<{table.Name}Result>()");
@@ -63,27 +65,26 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"fun validateField(field: {table.Name}FormField<*>, value: String) {{");
+            classText.AppendLine($"\tfun validateField(field: {table.Name}FormField<*>, value: String) {{");
             classText.AppendLine($"\t\tval current = _{table.Name.Decapitalise()}Form.value ?: {table.Name}FormState()");
             classText.AppendLine($"\t\t_{table.Name.Decapitalise()}Form.value = when (field) {{");
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateField, includePrimaryKey: false, appendCommas: false, singleLine: false));
-            classText.AppendLine("\t\t}}");
+            classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"fun validateAll(values: Map<{table.Name}FormField<*>, String>): Boolean {{");
-            classText.AppendLine("");
+            classText.AppendLine($"\tfun validateAll(values: Map<{table.Name}FormField<*>, String>): Boolean {{");
             classText.AppendLine("\t\tvar newState = _formState.value");
-            classText.AppendLine("\t\tfor ((field, value) in values) {{");
+            classText.AppendLine("\t\tfor ((field, value) in values) {");
             classText.AppendLine("");
-            classText.AppendLine("\t\t\tnewState = when (field) {{");
+            classText.AppendLine("\t\t\tnewState = when (field) {");
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateAllField, includePrimaryKey: false, appendCommas: false, singleLine: false));
-            classText.AppendLine("\t\t\t}}");
-            classText.AppendLine("\t\t}}");
+            classText.AppendLine("\t\t\t}");
+            classText.AppendLine("\t\t}");
             classText.AppendLine("");
             classText.AppendLine("\t\t_formState.value = newState");
-            classText.AppendLine("\t\treturn newState.allErrors().all {{ it == null }}");
-            classText.AppendLine("\t}}");
+            classText.AppendLine("\t\treturn newState.allErrors().all { it == null }");
+            classText.AppendLine("\t}");
 
 
             classText.AppendLine("}");
