@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CodeGenerator
 {
@@ -24,8 +25,9 @@ namespace CodeGenerator
                     classText.AppendLine($"\tval {column.Name.Decapitalise()}Error: Int? = null,");
                 }
             }
-            classText.AppendLine("\tval isDataValid: Boolean = false");
-            classText.AppendLine(")");
+            classText.AppendLine(") {");
+            classText.AppendLine($"\tfun allErrors(): List<Int?> = listOf({Library.TableColumnsCode(table.Columns.Where(co => !co.Nullable || co.kotlinDataType == kotlinDataTypes.strings), Library.ColumnNameDecapitalised, includePrimaryKey: false, appendCommas: true, singleLine: true)})");
+            classText.AppendLine("}");
 
         }
     }
