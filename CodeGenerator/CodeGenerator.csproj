@@ -53,6 +53,7 @@
     <Compile Include="AndroidDataAccessObjectGenerator.cs" />
     <Compile Include="AndroidDatabaseGenerator.cs" />
     <Compile Include="AndroidDataClassGenerator.cs" />
+    <Compile Include="AndroidFormFieldGenerator.cs" />
     <Compile Include="AndroidFormStateGenerator.cs" />
     <Compile Include="AndroidFragmentCodeGenerator.cs" />
     <Compile Include="AndroidFragmentLayoutGenerator.cs" />
