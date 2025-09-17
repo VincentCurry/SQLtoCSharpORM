@@ -140,7 +140,7 @@ namespace CodeGenerator
 
         private string CreateJsonSerialization(SQLTableColumn column) 
         {
-            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{(column.kotlinDataType == "Date" ? $"isoDateFormat.format({column.Name.Decapitalise()})" : column.Name.Decapitalise())}}}\\\"";
+            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{(column.kotlinDataType == "Date" ? (column.Nullable ? $"{column.Name.Decapitalise()}?.let {{isoDateFormat.format(it)}}" : $"isoDateFormat.format({column.Name.Decapitalise()})") : column.Name.Decapitalise())}}}\\\"";
         }
 
         private string ParameterForObjectCreation(SQLTableColumn column)
