@@ -59,10 +59,6 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\tandroid:layout_width=\"wrap_content\"");
             classText.AppendLine("\t\t\tandroid:layout_height=\"wrap_content\"");
             classText.AppendLine("\t\t\tandroid:layout_gravity=\"start\"");
-            //classText.AppendLine("\t\t\tandroid:layout_marginStart=\"48dp\"");
-            //classText.AppendLine("\t\t\tandroid:layout_marginTop=\"16dp\"");
-            //classText.AppendLine("\t\t\tandroid:layout_marginEnd=\"48dp\"");
-            //classText.AppendLine("\t\t\tandroid:layout_marginBottom=\"64dp\"");
             classText.AppendLine("\t\t\tandroid:enabled=\"false\"");
             classText.AppendLine($"\t\t\tandroid:text=\"@string/{table.Name.ToLower()}_save\"");
             Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_save", $"Save {table.Name}", _destinationFolder);
@@ -83,8 +79,8 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\tandroid:layout_marginBottom=\"64dp\"");
             classText.AppendLine($"\t\t\tandroid:visibility=\"gone\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintBottom_toBottomOf=\"parent\"");
-            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"@+id/{table.Columns[table.Columns.Count - 1].KotlinFragmentNameForPreviousField}\"");
-            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"@+id/{table.Columns[table.Columns.Count - 1].KotlinFragmentNameForNextField}\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintEnd_toEndOf=\"parent\"");
+            classText.AppendLine($"\t\t\tapp:layout_constraintStart_toStartOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintTop_toTopOf=\"parent\"");
             classText.AppendLine($"\t\t\tapp:layout_constraintVertical_bias=\"0.3\" /> ");
 
