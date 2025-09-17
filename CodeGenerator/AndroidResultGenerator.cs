@@ -20,9 +20,9 @@ namespace CodeGenerator
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"data class {table.Name}Result(");
-            classText.AppendLine($"\tval success: List<{table.Name}>? = null,");
+            classText.AppendLine($"\tval success: String? = null,");
             classText.AppendLine("\tval error: Int? = null");
-            classText.AppendLine($")");
+            classText.Append($")");
         }
     }
 }

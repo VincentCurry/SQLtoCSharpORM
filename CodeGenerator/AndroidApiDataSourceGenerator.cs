@@ -45,7 +45,7 @@ namespace CodeGenerator
             {
                 classText.AppendLine("\t@SuppressLint(\"SimpleDateFormat\")");
             }
-            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}): Result<{table.Name}> {{");
+            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}): Result<String> {{");
             classText.AppendLine($"\t\tvar {table.Name.Decapitalise()}Id: {table.PrimaryKey.kotlinDataType}");
             classText.AppendLine("\t\treturn try {");
 
@@ -71,11 +71,8 @@ namespace CodeGenerator
             {
                 classText.AppendLine($"\t\t\t\t\t{table.Name.Decapitalise()}Id = ({table.Name.Decapitalise()}Response.body()?.string()?.trim('\"') ?: \"\") as {table.PrimaryKey.kotlinDataType} ");
             }
-                classText.AppendLine($"\t\t\t\t\tval {table.Name.Decapitalise()}:{table.Name} = {table.Name} (");
-            classText.AppendLine(Library.TableColumnsCode(table, ParameterForObjectCreation, includePrimaryKey: true, appendCommas: true, singleLine: false));
-            classText.AppendLine(")");
 
-            classText.AppendLine($"\t\t\t\t\tResult.Success({table.Name.Decapitalise()})");
+            classText.AppendLine($"\t\t\t\t\tResult.Success({table.Name.Decapitalise()}Id)");
             classText.AppendLine("\t\t\t\t} else {");
             classText.AppendLine($"\t\t\t\t\tResult.Error(IOException(\"HTTP error code: ${{{table.Name.Decapitalise()}Response.code()}}\"))");
             classText.AppendLine("\t\t\t\t}");
@@ -125,7 +122,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t\t\tval {table.Name.Decapitalise()}: {table.Name} = gson.fromJson<{table.Name}>(response.body()");
             classText.AppendLine($"\t\t\t\t\t\t?.string() ?: \"\", {table.Name.Decapitalise()}Type)");
 
-            classText.AppendLine($"Result.Success({table.Name.Decapitalise()})");
+            classText.AppendLine($"\t\t\t\t\tResult.Success({table.Name.Decapitalise()})");
 
 
             classText.AppendLine("\t\t\t\t} else {");
@@ -137,7 +134,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t}");
             classText.AppendLine("\t}");
 
-            classText.AppendLine("}");
+            classText.Append("}");
         }
                 
 

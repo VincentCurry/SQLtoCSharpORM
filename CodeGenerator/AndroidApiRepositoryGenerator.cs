@@ -37,10 +37,10 @@ namespace CodeGenerator
             classText.AppendLine("\t\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) : Result<{table.Name}> {{");
+            classText.AppendLine($"\tsuspend fun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) : Result<String> {{");
             classText.AppendLine($"\t\treturn dataSource.save{table.Name}({Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)})");
             classText.AppendLine("\t}");
-            classText.AppendLine("}");
+            classText.Append("}");
         }
     }
 }
