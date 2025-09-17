@@ -140,7 +140,20 @@ namespace CodeGenerator
 
         private string CreateJsonSerialization(SQLTableColumn column) 
         {
-            return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{(column.kotlinDataType == "Date" ? (column.Nullable ? $"{column.Name.Decapitalise()}?.let {{isoDateFormat.format(it)}}" : $"isoDateFormat.format({column.Name.Decapitalise()})") : column.Name.Decapitalise())}}}\\\"";
+            if (column.kotlinDataType == kotlinDataTypes.date) {
+                if (column.Nullable)
+                {
+                    return $"${{Library.timeJsonParameterAndValue({column.Name.Decapitalise()}, \"{column.Name.Decapitalise()}\")}}";
+                }
+                else
+                {
+                    return $"\\\"{column.Name.Decapitalise()}\\\":\\\"${{isoDateFormat.format({column.Name.Decapitalise()})}}";
+                }
+            } 
+            else
+            {
+                return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.Name.Decapitalise()}}}\\\"";
+            }    
         }
 
         private string ParameterForObjectCreation(SQLTableColumn column)
