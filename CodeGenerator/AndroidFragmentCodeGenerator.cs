@@ -119,7 +119,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
 
-            classText.AppendLine($"\t\tprivate fun updateUiWithSaved{table.Name}(model: {table.Name}) {{");
+            classText.AppendLine($"\t\tprivate fun updateUiWithSaved{table.Name}(result: String) {{");
             classText.AppendLine($"\t\t\tval {table.Name.Decapitalise()}SavedMessage: String = getString(R.string.{table.Name.ToLower()}_saved_message)");
             Library.WriteToKotlinStringsFile($"{table.Name.ToLower()}_saved_message", $"The {table.Name} has been successfully saved.", _destinationFolder);
             classText.AppendLine("\t\t\tval appContext = context?.applicationContext ?: return");
@@ -243,8 +243,8 @@ namespace CodeGenerator
                 textChangedHandler.AppendLine("\t\t\t\t// ignore");
                 textChangedHandler.AppendLine("\t\t\t}");
                 textChangedHandler.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
-                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.Text, {column.Name.Decapitalise()}EditText.editText?.text.toString())");
-                textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = voucherViewModel.validateAll(mapOf({Library.TableColumnsCode(column.ParentTable.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)}))");
+                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.{column.Name}, {column.Name.Decapitalise()}EditText.editText?.text.toString())");
+                textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = {column.TableName.Decapitalise()}ViewModel.validateAll(mapOf({Library.TableColumnsCode(column.ParentTable.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)}))");
                 textChangedHandler.AppendLine("\t\t\t}\r\n\t\t}");
 
                 return textChangedHandler.ToString();
@@ -254,7 +254,7 @@ namespace CodeGenerator
 
         private string MapOfColumnsToBeValidated(SQLTableColumn column)
         {
-            return $"VoucherFormField.{column.Name} to {column.Name.Decapitalise()}EditText.editText?.text.toString()";
+            return $"{column.TableName}FormField.{column.Name} to {column.Name.Decapitalise()}EditText.editText?.text.toString()";
         }
     }
 }
