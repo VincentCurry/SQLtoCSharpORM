@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace CodeGenerator
 {
@@ -65,7 +66,7 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun validateField(field: {table.Name}FormField<*>, value: String) {{");
+            classText.AppendLine($"\tfun validateField(field: {table.Name}FormField<*>, value: String, touched: Boolean) {{");
             classText.AppendLine($"\t\tval current = _{table.Name.Decapitalise()}Form.value ?: {table.Name}FormState()");
             classText.AppendLine($"\t\t_{table.Name.Decapitalise()}Form.value = when (field) {{");
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateField, includePrimaryKey: false, appendCommas: false, singleLine: false));
@@ -92,7 +93,14 @@ namespace CodeGenerator
         }
         private string ValidateField(SQLTableColumn column)
         {
-            return $"\t\t\tis {column.TableName}FormField.{column.Name}  -> current.copy({column.Name.Decapitalise()}Error = field.validator(value as String))";
+            StringBuilder validateField = new StringBuilder();
+
+            validateField.AppendLine($"\t\t\tis {column.TableName}FormField.{column.Name}  -> current.copy(");
+            validateField.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Error = if(current.{column.Name.Decapitalise()}Touched || touched) field.validator(value) else null,");
+            validateField.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Touched = current.{column.Name.Decapitalise()}Touched || touched");
+            validateField.Append("\t\t\t)");
+            
+            return validateField.ToString();
         }
 
         private string ValidateAllField(SQLTableColumn column)

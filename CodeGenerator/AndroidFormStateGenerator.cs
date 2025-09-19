@@ -27,7 +27,7 @@ namespace CodeGenerator
 
         private string FormStateErrorPropertyDefinition(SQLTableColumn column)
         {
-            return $"\tval {column.Name.Decapitalise()}Error: Int? = null";
+            return $"\tval {column.Name.Decapitalise()}Error: Int? = null,\r\n\tval {column.Name.Decapitalise()}Touched: Boolean = false";
         }
     }
 }

@@ -111,6 +111,7 @@ namespace CodeGenerator
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValueChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));            
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine(Environment.NewLine);
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), OnFocusListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine($"\t\tsave{table.Name}Button.setOnClickListener {{");
             classText.AppendLine("\t\t\tloadingProgressBar.visibility = View.VISIBLE");
             classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}ViewModel.save{table.Name}(");
@@ -243,7 +244,7 @@ namespace CodeGenerator
                 textChangedHandler.AppendLine("\t\t\t\t// ignore");
                 textChangedHandler.AppendLine("\t\t\t}");
                 textChangedHandler.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
-                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.{column.Name}, {column.Name.Decapitalise()}EditText.editText?.text.toString())");
+                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.{column.Name}, {column.Name.Decapitalise()}EditText.editText?.text.toString(), touched = false)");
                 textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = {column.TableName.Decapitalise()}ViewModel.validateAll(mapOf({Library.TableColumnsCode(column.ParentTable.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)}))");
                 textChangedHandler.AppendLine("\t\t\t}\r\n\t\t}");
 
@@ -255,6 +256,23 @@ namespace CodeGenerator
         private string MapOfColumnsToBeValidated(SQLTableColumn column)
         {
             return $"{column.TableName}FormField.{column.Name} to {column.Name.Decapitalise()}EditText.editText?.text.toString()";
+        }
+
+        private string OnFocusListener(SQLTableColumn column)
+        {
+            StringBuilder onFocusListener = new StringBuilder();
+
+            onFocusListener.AppendLine($"\t{column.Name.Decapitalise()}EditText.editText?.setOnFocusChangeListener {{ _, hasFocus ->");
+            onFocusListener.AppendLine("\t\tif (!hasFocus) {");
+            onFocusListener.AppendLine($"\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField(");
+            onFocusListener.AppendLine($"\t\t\t\t{column.TableName}FormField.{column.Name},");
+            onFocusListener.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}EditText.editText?.text.toString(),");
+            onFocusListener.AppendLine("\t\t\t\ttouched = true");
+            onFocusListener.AppendLine("\t\t\t)");
+            onFocusListener.AppendLine("\t\t}");
+            onFocusListener.AppendLine("\t}");
+
+            return onFocusListener.ToString();
         }
     }
 }
