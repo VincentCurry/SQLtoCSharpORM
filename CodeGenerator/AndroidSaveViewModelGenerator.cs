@@ -27,11 +27,11 @@ namespace CodeGenerator
             classText.AppendLine($"import com.{_nameSpace}.data.{table.Name}Repository");
             classText.AppendLine($"import com.{_nameSpace}.data.Result");
             classText.AppendLine("import kotlinx.coroutines.flow.MutableStateFlow");
+            classText.Append(table.ContainsDateColumn ? $"import kotlinx.coroutines.flow.StateFlow{Environment.NewLine}" : "");
             classText.AppendLine("import kotlinx.coroutines.launch");
-            if (table.Columns.Any(col => col.cSharpDataType == "DateTime"))
-            {
-                classText.AppendLine("import java.util.Date");
-            }
+            classText.Append(table.ContainsDateColumn ? $"import java.time.LocalDate //this is for date columns, it might be deleteable{Environment.NewLine}" : "");
+            classText.Append(table.ContainsDateColumn ? $"import java.time.LocalDateTime //this is for dateandtime columns, it might be deleteable{Environment.NewLine}" : "");
+            classText.Append(table.ContainsDateColumn ? $"import java.util.Date{Environment.NewLine}" : "");
             classText.Append(Environment.NewLine);
 
             classText.AppendLine($"class {table.Name}ViewModel(private val {table.Name.Decapitalise()}Repository: {table.Name}Repository) : ViewModel() {{");
@@ -46,10 +46,16 @@ namespace CodeGenerator
             classText.AppendLine($"\tval {table.Name.Decapitalise()}Result: LiveData<{table.Name}Result> = _{table.Name.Decapitalise()}Result");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun save{table.Name}({Library.TableColumnsCode(table, Library.KotlinParameterNameAndType, false, true, true)}) {{");
+            classText.AppendLine(Library.TableColumnsCode(table, FieldsAsFilters, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.Append(Environment.NewLine);
+            classText.AppendLine(Library.TableColumnsCode(table, ExposedAsImmutable, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            classText.Append(Environment.NewLine);
+            classText.AppendLine(Library.TableColumnsCode(table, UpdateFunctions, includePrimaryKey: false, appendCommas: false, singleLine: false));
+
+            classText.AppendLine($"\tfun save{table.Name}() {{");
             classText.AppendLine("\t\tviewModelScope.launch {");
             classText.Append($"\t\t\tval result = {table.Name.Decapitalise()}Repository.save{table.Name}(");
-            classText.Append($"{Library.TableColumnsCode(table, Library.ColumnNameDecapitalised, false, true, true)}");
+            classText.Append(Library.TableColumnsCode(table, FieldForSaving, includePrimaryKey: false, appendCommas: true, singleLine: true));
             classText.AppendLine(")");
             classText.Append(Environment.NewLine);
 
@@ -74,9 +80,14 @@ namespace CodeGenerator
             classText.AppendLine("\t}");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\tfun validateAll(values: Map<{table.Name}FormField<*>, String>): Boolean {{");
+            classText.AppendLine($"\tfun validateAll(): Boolean {{");
+            classText.Append(Environment.NewLine);
+
+            classText.AppendLine($"\t\tval fieldsToBeValidated = mapOf({Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)})");
+            classText.Append(Environment.NewLine);
+
             classText.AppendLine("\t\tvar newState = _formState.value");
-            classText.AppendLine("\t\tfor ((field, value) in values) {");
+            classText.AppendLine("\t\tfor ((field, value) in fieldsToBeValidated) {");
             classText.AppendLine("");
             classText.AppendLine("\t\t\tnewState = when (field) {");
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateAllField, includePrimaryKey: false, appendCommas: false, singleLine: false));
@@ -106,6 +117,113 @@ namespace CodeGenerator
         private string ValidateAllField(SQLTableColumn column)
         {
             return $"\t\t\t\tis {column.TableName}FormField.{column.Name} -> newState.copy({column.Name.Decapitalise()}Error = field.validator(value as String))";
+        }
+
+        private string FieldsAsFilters(SQLTableColumn column)
+        {
+            if (column.kotlinDataType == kotlinDataTypes.date)
+            {
+                StringBuilder dateFields = new StringBuilder();
+                dateFields.AppendLine("//// Date and Time column fields. Delete if the field is a date only.");
+                dateFields.AppendLine($"\tprivate val _{column.Name.Decapitalise()} = MutableStateFlow<LocalDateTime?>(null)");
+                dateFields.AppendLine("// Date column fields. Delete if the field is a datetime");
+                dateFields.AppendLine($"\tprivate val _{column.Name.Decapitalise()} = MutableStateFlow<LocalDate?>(null)");
+
+                return dateFields.ToString();
+            }
+            else
+            {
+                return $"\tprivate val _{column.Name.Decapitalise()} = MutableStateFlow<{column.kotlinDataType}?>(null)";
+            }
+        }
+
+        private string ExposedAsImmutable(SQLTableColumn column)
+        {
+            if (column.kotlinDataType == kotlinDataTypes.date)
+            {
+                StringBuilder dateFields = new StringBuilder();
+                dateFields.AppendLine("//// Date and Time column fields. Delete if the field is a date only.");
+                dateFields.AppendLine($"\tval {column.Name.Decapitalise()}: StateFlow<LocalDateTime?> = _{column.Name.Decapitalise()}");
+                dateFields.AppendLine("// Date column fields. Delete if the field is a datetime");
+                dateFields.AppendLine($"\t\tval {column.Name.Decapitalise()}: StateFlow<LocalDate?> = _{column.Name.Decapitalise()}");
+
+                return dateFields.ToString();
+            }
+            else
+            {
+                return $"\t\tval {column.Name.Decapitalise()}: StateFlow<{column.kotlinDataType}?> = _{column.Name.Decapitalise()}";
+            }
+        }
+
+        private string UpdateFunctions(SQLTableColumn column)
+        {
+            if(column.kotlinDataType == kotlinDataTypes.date)
+            {
+                StringBuilder dateTimeField = new StringBuilder();
+
+                dateTimeField.AppendLine("//Date and time column fields. Delete if the field is a date");
+                dateTimeField.AppendLine($"\tfun update{column.Name}(dateTime: LocalDateTime) {{");
+                dateTimeField.AppendLine($"\t\t_{column.Name.Decapitalise()}.value = dateTime");
+                dateTimeField.AppendLine($"\t}}");
+
+                if (column.Nullable)
+                {
+                    dateTimeField.AppendLine($"\r\n\tfun set{column.Name}Enabled(enabled: Boolean) {{");
+                    dateTimeField.AppendLine($"\t\tif (!enabled) {{");
+                    dateTimeField.AppendLine($"\t\t\t_{column.Name.Decapitalise()}.value = null");
+                    dateTimeField.AppendLine($"\t\t}}");
+                    dateTimeField.AppendLine($"\t}}");
+                }
+
+                dateTimeField.AppendLine("//Date column fields. Delete if the field is a datetime");
+                dateTimeField.AppendLine($"\tfun update{column.Name}(dateTime: LocalDate) {{");
+                dateTimeField.AppendLine($"\t\t_{column.Name.Decapitalise()}.value = dateTime");
+                dateTimeField.AppendLine($"\t}}");
+
+                if (column.Nullable)
+                {
+                    dateTimeField.AppendLine($"\r\n\tfun set{column.Name}Enabled(enabled: Boolean) {{");
+                    dateTimeField.AppendLine($"\t\tif (!enabled) {{");
+                    dateTimeField.AppendLine($"\t\t\t_{column.Name.Decapitalise()}.value = null");
+                    dateTimeField.AppendLine($"\t\t}}");
+                    dateTimeField.AppendLine($"\t}}");
+                }
+
+                return dateTimeField.ToString();
+            }
+            else
+            {
+                if (column.IsToBeValidated) {
+                    StringBuilder fieldUpdate = new StringBuilder();
+                    fieldUpdate.AppendLine($"fun update{column.Name}({column.Name.Decapitalise()}: {column.kotlinDataType}) {{");
+                    fieldUpdate.AppendLine($"_{column.Name.Decapitalise()}.value = {column.Name.Decapitalise()}");
+                    fieldUpdate.AppendLine($"validateField({column.TableName}FormField.{column.Name}, {column.Name.Decapitalise()}, touched = false)");
+                    fieldUpdate.AppendLine("}");
+
+                    return fieldUpdate.ToString();
+                }
+                else
+                {
+                    return $"fun update{column.Name}({column.Name.Decapitalise()}: {column.kotlinDataType}) {{_{column.Name.Decapitalise()}.value = {column.Name.Decapitalise()}}}";
+                }
+            }
+        }
+
+        private string FieldForSaving(SQLTableColumn column)
+        {
+            if (column.kotlinDataType == kotlinDataTypes.date)
+            {
+                return $"Date.from(_{column.Name.Decapitalise()}.value?.atZone(ZoneId.systemDefault())?.toInstant())  Date.from(_{column.Name.Decapitalise()}.value?.atStartOfDay(ZoneId.systemDefault())?.toInstant())";
+            }
+            else
+            {
+                return $"_{column.Name.Decapitalise()}.value{(column.Nullable ? "" : ".toString()") }";
+            }
+        }
+
+        private string MapOfColumnsToBeValidated(SQLTableColumn column)
+        {
+            return $"{column.TableName}FormField.{column.Name} to if (_{column.Name.Decapitalise()}.value == null ) \"\" else _{column.Name.Decapitalise()}.value";
         }
     }
 }

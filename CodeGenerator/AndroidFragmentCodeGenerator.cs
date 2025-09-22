@@ -7,6 +7,68 @@ namespace CodeGenerator
 {
     public class AndroidFragmentCodeGenerator : Generator
     {
+        string dateDisplayFormatStringKey = "date_display_format";
+
+        /*
+         * If there are any date or date time parameters, the following two functions will need to be added to the library:
+         * 
+         * fun showDatePicker(
+            initialDate: Long? = null,
+            title: String = "Select a date",
+            fragment: Fragment,
+            onDateSelected: (LocalDate) -> Unit
+        ) {
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(title)
+                .setSelection(initialDate ?: MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+
+            picker.addOnPositiveButtonClickListener { millis ->
+                onDateSelected(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate())
+            }
+
+            fragment.activity?.let { picker.show(it.supportFragmentManager, "MATERIAL_DATE_PICKER") }
+        }
+
+        fun showDateTimePicker(initialDateTime: Long? = null, dateTitle: String, timeTitle: String, fragment: Fragment, onDateTimeSelected: (LocalDateTime) -> Unit) {
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(dateTitle)
+                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+
+            fragment.activity?.supportFragmentManager?.let { datePicker.show(it,"DATE_PICKER") }
+
+
+            // Temporary store picked date
+            var pickedDate: LocalDate? = null
+
+            datePicker.addOnPositiveButtonClickListener { dateMillis ->
+                pickedDate = Instant.ofEpochMilli(dateMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+            }
+
+            // When DatePicker is dismissed → show TimePicker if a date was chosen
+            datePicker.addOnDismissListener {
+                pickedDate?.let { date ->
+                    val timePicker = MaterialTimePicker.Builder()
+                        .setTitleText(timeTitle)
+                        .setTimeFormat(TimeFormat.CLOCK_24H) // or CLOCK_12H
+                        .setHour(12)
+                        .setMinute(0)
+                        .build()
+
+                    fragment.activity?.let { timePicker.show(it.supportFragmentManager, "TIME_PICKER") }
+
+                    timePicker.addOnPositiveButtonClickListener {
+                        val pickedTime = LocalTime.of(timePicker.hour, timePicker.minute)
+                        val pickedDateTime = LocalDateTime.of(date, pickedTime)
+                        onDateTimeSelected(pickedDateTime)
+                    }
+                }
+            }
+        }
+         * */
         public AndroidFragmentCodeGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
             fileSuffix = "kt";
@@ -35,6 +97,10 @@ namespace CodeGenerator
             classText.AppendLine($"import com.{_nameSpace}.data.model.{table.Name}");
             classText.AppendLine($"import com.{_nameSpace}.databinding.Fragment{table.Name}Binding");
             classText.AppendLine($"import com.{_nameSpace}.preferenceFileName");
+            classText.Append(table.ContainsDateColumn ? $"import kotlinx.coroutines.flow.collectLatest{Environment.NewLine}" : "");
+            classText.AppendLine("import kotlinx.coroutines.launch");
+            classText.AppendLine("import kotlinx.coroutines.withContext");
+            classText.Append(table.ContainsDateColumn ? $"import java.time.format.DateTimeFormatter{Environment.NewLine}" : "");
 
             classText.Append(Environment.NewLine);
 
@@ -45,7 +111,14 @@ namespace CodeGenerator
             classText.AppendLine($"\tprivate var _binding: Fragment{table.Name}Binding? = null");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.kotlinDataType == kotlinDataTypes.date), DateVariablesAtFragmentLevel, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            if (table.ContainsDateColumn)
+            {
+                string dateAndTimeDisplayFormatStringKey = "date_and_time_display_format";
+                Library.WriteToKotlinStringsFile(dateDisplayFormatStringKey, "dd MMM yyyy", _destinationFolder);
+                Library.WriteToKotlinStringsFile(dateAndTimeDisplayFormatStringKey, "d MMM yyyy hh:mm:ss", _destinationFolder);
+
+                classText.AppendLine($"private lateinit var dateTimeFormatter: DateTimeFormatter");
+            }
 
             classText.AppendLine("\tprivate val binding get() = _binding!!");
             classText.Append(Environment.NewLine);
@@ -55,6 +128,9 @@ namespace CodeGenerator
             classText.AppendLine("\t\tcontainer: ViewGroup?,");
             classText.AppendLine("\t\tsavedInstanceState: Bundle?");
             classText.AppendLine("\t): View? {");
+            classText.AppendLine(Environment.NewLine);
+
+            classText.AppendLine("dateTimeFormatter = DateTimeFormatter.ofPattern(getString(R.string.{ dateAndTimeDisplayFormatStringKey}))");
             classText.AppendLine(Environment.NewLine);
 
             classText.AppendLine($"\t\t_binding = Fragment{table.Name}Binding.inflate(inflater, container, false)");
@@ -103,20 +179,24 @@ namespace CodeGenerator
             classText.AppendLine("\t\t\t\t}");
             classText.AppendLine($"\t\t\t\t{table.Name.Decapitalise()}Result.success?.let {{");
             classText.AppendLine($"\t\t\t\t\tupdateUiWithSaved{table.Name}(it)");
-
-
             classText.AppendLine("\t\t\t\t}");
             classText.AppendLine("\t\t\t})");
             classText.Append(Environment.NewLine);
-            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValueChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));            
-            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
+
+            classText.AppendLine("//functions for date and time values");
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(col => col.kotlinDataType == kotlinDataTypes.date), DateViewModelListener, includePrimaryKey: false, appendCommas: false, singleLine: true));
+            classText.Append(Environment.NewLine);
+
+            classText.AppendLine("//functions for date values");
+            classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(col => col.kotlinDataType == kotlinDataTypes.date), DateModelListener, includePrimaryKey: false, appendCommas: false, singleLine: true));
+
+            classText.AppendLine(Library.TableColumnsCode(table, ValueChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));            
+            classText.AppendLine(Library.TableColumnsCode(table, TextEditorTextChangedListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine(Environment.NewLine);
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), OnFocusListener, includePrimaryKey: false, appendCommas: false, singleLine: false));
             classText.AppendLine($"\t\tsave{table.Name}Button.setOnClickListener {{");
             classText.AppendLine("\t\t\tloadingProgressBar.visibility = View.VISIBLE");
-            classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}ViewModel.save{table.Name}(");
-            classText.AppendLine(Library.TableColumnsCode(table, ReadControlsForKotlin, includePrimaryKey: false, appendCommas: true, singleLine: false));
-            classText.AppendLine("\t\t\t)");
+            classText.AppendLine($"\t\t\t{table.Name.Decapitalise()}ViewModel.save{table.Name}()");
             classText.AppendLine("\t\t\t}");
             classText.AppendLine("\t\t}");
 
@@ -153,10 +233,6 @@ namespace CodeGenerator
             classText.AppendLine("\t\treturn sharedPrefs.getString(sharedPreferenceName, null)!!");
             classText.AppendLine("\t}");
 
-            if (table.Columns.Any(col => col.kotlinDataType == kotlinDataTypes.date))
-            {
-                classText.AppendLine("\r\n\r\n\tprivate fun showDatePicker(\r\n\t\tinitialDate: Long? = null,\r\n\t\ttitle: String = \"Select a date\",\r\n\t\tonDateSelected: (Long) -> Unit\r\n\t) {\r\n\t\tval picker = MaterialDatePicker.Builder.datePicker()\r\n\t\t\t.setTitleText(title)\r\n\t\t\t.setSelection(initialDate ?: MaterialDatePicker.todayInUtcMilliseconds())\r\n\t\t\t.build()\r\n\r\n\t\tpicker.addOnPositiveButtonClickListener { millis ->\r\n\t\t\tonDateSelected(millis)\r\n\t\t}\r\n\r\n\t\tactivity?.let { picker.show(it.supportFragmentManager, \"MATERIAL_DATE_PICKER\") }\r\n\t}");
-            }
             classText.AppendLine("}");
 
         }
@@ -183,23 +259,49 @@ namespace CodeGenerator
                 {
                     chooserText.AppendLine($"\t\t{column.KotlinDateSwitchField}.setOnCheckedChangeListener {{ _,isChecked ->");
                     chooserText.AppendLine($"\t\t\t{column.KotlinDateLabelField}.visibility = if (isChecked) View.VISIBLE else View.GONE");
+                    chooserText.AppendLine($"\t\t\t{column.TableName.Decapitalise()}ViewModel.set{column.Name}Enabled(isChecked)");
 
                     chooserText.AppendLine($"\t\t}}");
                     chooserText.Append(Environment.NewLine);
                 }
+                chooserText.AppendLine("//Use these functions if you require a Date");
                 chooserText.AppendLine($"\t\t{column.KotlinDateLabelField}.setEndIconOnClickListener({{");
-                chooserText.AppendLine($"\t\t\tshowDatePicker(null, getString(R.string.{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_date_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint)) {{ millis ->");
-                chooserText.AppendLine($"\t\t\t\t{column.Name.Decapitalise()}Date = Date(millis)");
-                chooserText.AppendLine($"\t\t\t\tval sdf = SimpleDateFormat(getString(R.string.date_display_format), Locale.getDefault())");
-                chooserText.AppendLine($"\t\t\t\tval date = {column.Name.Decapitalise()}Date?.let {{ it1 -> sdf.format(it1) }}");
-                chooserText.AppendLine($"\t\t\t\t{column.KotlinDateTextField}.setText(date)");
-                chooserText.AppendLine("\t\t\t}");
-                chooserText.Append("\t\t})");
-                chooserText.Append(Environment.NewLine);
+                chooserText.AppendLine(SetUpDatePicker(column));
+                chooserText.AppendLine("\t\t})");
+                chooserText.AppendLine($"\t\t{column.KotlinDateTextField}.setOnClickListener({{");
+                chooserText.AppendLine(SetUpDatePicker(column));
+                chooserText.AppendLine("\t\t})");
+
+                chooserText.AppendLine("//Use these functions if you require a DateTime");
+                chooserText.AppendLine($"\t\t{column.KotlinDateLabelField}.setEndIconOnClickListener({{");
+                chooserText.AppendLine(SetUpDateTimePicker(column));
+                chooserText.AppendLine("\t\t})");
+                chooserText.AppendLine($"\t\t{column.KotlinDateTextField}.setOnClickListener({{");
+                chooserText.AppendLine(SetUpDateTimePicker(column));
+                chooserText.AppendLine("\t\t})");
 
                 return chooserText.ToString();
             }
             else { return ""; }
+        }
+
+        private string SetUpDatePicker(SQLTableColumn column)
+        {
+            StringBuilder setUpDatePickerFunction = new StringBuilder();
+            setUpDatePickerFunction.AppendLine($"\t\t\tLibrary.showDatePicker(null, getString(R.string.{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_date_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint)), this {{ selectedDate ->");
+            setUpDatePickerFunction.AppendLine($"\t\t\t{column.TableName.Decapitalise()}ViewModel.update{column.Name}(selectedDate)");
+
+            setUpDatePickerFunction.AppendLine("\t\t\t}");
+            return setUpDatePickerFunction.ToString();
+        }
+
+        private string SetUpDateTimePicker(SQLTableColumn column)
+        {
+            StringBuilder setUpDateTimePickerFunction = new StringBuilder();
+            setUpDateTimePickerFunction.AppendLine($"\t\t\tLibrary.showDateTimePicker(null, getString(R.string.{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_date_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint)), getString(R.string.{column.TableName.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_time_{column.Name.LowerFirstCharacterAndAddUnderscoreToFurtherCapitals()}_hint)), this {{ selectedDate ->");
+            setUpDateTimePickerFunction.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.update{column.Name}(selectedDate)");
+            setUpDateTimePickerFunction.AppendLine("\t\t\t}");
+            return setUpDateTimePickerFunction.ToString();
         }
 
         private string ReadControlsForKotlin(SQLTableColumn column)
@@ -232,7 +334,11 @@ namespace CodeGenerator
 
         private string ValueChangedListener(SQLTableColumn column)
         {
-            if(column.IsToBeValidated)
+            if (column.kotlinDataType == kotlinDataTypes.date)
+            {
+                return "";
+            }
+            else
             {
                 StringBuilder textChangedHandler = new StringBuilder();
 
@@ -244,18 +350,12 @@ namespace CodeGenerator
                 textChangedHandler.AppendLine("\t\t\t\t// ignore");
                 textChangedHandler.AppendLine("\t\t\t}");
                 textChangedHandler.AppendLine("\t\t\toverride fun afterTextChanged(s: Editable) {");
-                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.validateField({column.TableName}FormField.{column.Name}, {column.Name.Decapitalise()}EditText.editText?.text.toString(), touched = false)");
-                textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = {column.TableName.Decapitalise()}ViewModel.validateAll(mapOf({Library.TableColumnsCode(column.ParentTable.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)}))");
+                textChangedHandler.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.update{column.Name}({column.Name.Decapitalise()}EditText.editText?.text.toString())");
+                textChangedHandler.AppendLine($"\r\n\t\t\t\tsave{column.TableName}Button.isEnabled = {column.TableName.Decapitalise()}ViewModel.validateAll()");
                 textChangedHandler.AppendLine("\t\t\t}\r\n\t\t}");
 
                 return textChangedHandler.ToString();
             }
-            return "";
-        }
-
-        private string MapOfColumnsToBeValidated(SQLTableColumn column)
-        {
-            return $"{column.TableName}FormField.{column.Name} to {column.Name.Decapitalise()}EditText.editText?.text.toString()";
         }
 
         private string OnFocusListener(SQLTableColumn column)
@@ -273,6 +373,46 @@ namespace CodeGenerator
             onFocusListener.AppendLine("\t}");
 
             return onFocusListener.ToString();
+        }
+
+        private string DateViewModelListener(SQLTableColumn column) {
+            StringBuilder dateViewModelListener = new StringBuilder();
+            dateViewModelListener.AppendLine("\t\t\tlifecycleScope.launchWhenStarted {");
+            dateViewModelListener.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.{column.Name.Decapitalise()}.collectLatest {{ {column.Name.Decapitalise()} ->");
+            dateViewModelListener.AppendLine($"\t\t\t\t\tif({column.Name.Decapitalise()} == null) {{");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}Switch.isChecked = false");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}DateInputLayout.visibility = View.GONE");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}EditText.setText(\"\")");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t}} else {{");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}Switch.isChecked = true");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}DateInputLayout.visibility = View.VISIBLE");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}EditText.setText({column.Name.Decapitalise()}.format(dateTimeFormatter))");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t}}");
+            dateViewModelListener.AppendLine($"\t\t\t\t}}");
+            dateViewModelListener.AppendLine($"\t\t\t}}");
+
+            return dateViewModelListener.ToString();
+        }
+
+        private string DateModelListener(SQLTableColumn column)
+        {
+            StringBuilder dateViewModelListener = new StringBuilder();
+            dateViewModelListener.AppendLine("\t\t\tlifecycleScope.launchWhenStarted {");
+            dateViewModelListener.AppendLine($"\t\t\t\t{column.TableName.Decapitalise()}ViewModel.{column.Name.Decapitalise()}.collectLatest {{ {column.Name.Decapitalise()} ->");
+            dateViewModelListener.AppendLine($"\t\t\t\t\tif({column.Name.Decapitalise()} == null) {{");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}Switch.isChecked = false");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}DateInputLayout.visibility = View.GONE");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}EditText.setText(\"\")");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t}} else {{");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}Switch.isChecked = true");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}DateInputLayout.visibility = View.VISIBLE");
+            dateViewModelListener.AppendLine($"val formatted{column.Name} = {column.Name.Decapitalise()}.format(DateTimeFormatter.ofPattern(getString(R.string.{dateDisplayFormatStringKey})))");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t\t{column.Name.Decapitalise()}EditText.setText(formatted{column.Name})");
+            dateViewModelListener.AppendLine($"\t\t\t\t\t}}");
+            dateViewModelListener.AppendLine($"\t\t\t\t}}");
+            dateViewModelListener.AppendLine($"\t\t\t}}");
+
+            return dateViewModelListener.ToString();
         }
     }
 }

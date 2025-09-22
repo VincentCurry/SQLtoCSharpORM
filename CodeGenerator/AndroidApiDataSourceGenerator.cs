@@ -152,7 +152,14 @@ namespace CodeGenerator
             } 
             else
             {
-                return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.Name.Decapitalise()}}}\\\"";
+                if (column.Nullable)
+                {
+                    return $"${{Library.nullableStringJsonParameterAndValue(\"{column.Name.Decapitalise()}\", {column.Name.Decapitalise()})}}";
+                }
+                else
+                {
+                    return $"\\\"{column.Name.Decapitalise()}\\\": \\\"${{{column.Name.Decapitalise()}}}\\\"";
+                }
             }    
         }
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace CodeGenerator
 {
@@ -10,6 +11,11 @@ namespace CodeGenerator
         public string Name { get; set; }
         public int id { get; set; }
         public List<SQLTableColumn> Columns { get; set; }
+
+        public bool ContainsDateColumn
+        {
+            get { return Columns.Any(col => col.cSharpDataType == "DateTime"); }
+        }
 
         public SQLTableColumn PrimaryKey
         {
