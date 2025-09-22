@@ -83,16 +83,9 @@ namespace CodeGenerator
             classText.AppendLine($"\tfun validateAll(): Boolean {{");
             classText.Append(Environment.NewLine);
 
-            classText.AppendLine($"\t\tval fieldsToBeValidated = mapOf({Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), MapOfColumnsToBeValidated, includePrimaryKey: false, appendCommas: true, singleLine: true)})");
-            classText.Append(Environment.NewLine);
-
             classText.AppendLine("\t\tvar newState = _formState.value");
-            classText.AppendLine("\t\tfor ((field, value) in fieldsToBeValidated) {");
             classText.AppendLine("");
-            classText.AppendLine("\t\t\tnewState = when (field) {");
             classText.AppendLine(Library.TableColumnsCode(table.Columns.Where(co => co.IsToBeValidated), ValidateAllField, includePrimaryKey: false, appendCommas: false, singleLine: false));
-            classText.AppendLine("\t\t\t}");
-            classText.AppendLine("\t\t}");
             classText.AppendLine("");
             classText.AppendLine("\t\t_formState.value = newState");
             classText.AppendLine("\t\treturn newState.allErrors().all { it == null }");
@@ -116,7 +109,7 @@ namespace CodeGenerator
 
         private string ValidateAllField(SQLTableColumn column)
         {
-            return $"\t\t\t\tis {column.TableName}FormField.{column.Name} -> newState.copy({column.Name.Decapitalise()}Error = field.validator(value as String))";
+            return $"\t\tnewState = newState.copy({column.Name.Decapitalise()}Error = {column.TableName}FormField.{column.Name}.validator((if (_{column.Name.Decapitalise()}.value == null) \"\" else _{column.Name.Decapitalise()}.value)!!))";
         }
 
         private string FieldsAsFilters(SQLTableColumn column)
