@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CodeGenerator</RootNamespace>
     <AssemblyName>CodeGenerator</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DataServer">
@@ -45,13 +48,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidApiDataSourceGenerator.cs" />
+    <Compile Include="AndroidApiRepositoryGenerator.cs" />
     <Compile Include="AndroidDataAccessObjectGenerator.cs" />
     <Compile Include="AndroidDatabaseGenerator.cs" />
     <Compile Include="AndroidDataClassGenerator.cs" />
+    <Compile Include="AndroidFormFieldGenerator.cs" />
+    <Compile Include="AndroidFormStateGenerator.cs" />
+    <Compile Include="AndroidFragmentCodeGenerator.cs" />
+    <Compile Include="AndroidFragmentLayoutGenerator.cs" />
+    <Compile Include="AndroidModelGenerator.cs" />
     <Compile Include="AndroidRepositoryGenerator.cs" />
+    <Compile Include="AndroidResultGenerator.cs" />
+    <Compile Include="AndroidSaveViewModelGenerator.cs" />
+    <Compile Include="AndroidViewModelFactoryGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
+    <Compile Include="MvcApiControllerTestsGenerator.cs" />
     <Compile Include="ReactFormGenerator.cs" />
     <Compile Include="SQLStatementGenerator.cs" />
     <Compile Include="Generator.cs" />
@@ -64,6 +78,7 @@
     <Compile Include="SQLForeignKeyRelation.cs" />
     <Compile Include="SQLTable.cs" />
     <Compile Include="SQLTableColumn.cs" />
+    <Compile Include="StringExtensions.cs" />
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />

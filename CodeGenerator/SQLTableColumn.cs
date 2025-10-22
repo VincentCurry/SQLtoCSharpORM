@@ -24,6 +24,65 @@ namespace CodeGenerator
 
         private int maximumLength;
 
+        public bool IsToBeValidated
+        {
+            get { return !this.PrimaryKey && !this.Nullable; }
+        }
+
+        public string KotlinFragmentNameForPreviousField
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.dateTime)
+                    return KotlinDateLabelField;
+                else
+                    return Name.LowerFirstCharacter();
+            }
+        }
+
+        public string KotlinFragmentNameForNextField
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.dateTime)
+                    return KotlinDateSwitchField;
+                else
+                    return Name.LowerFirstCharacter();
+            }
+        }
+
+        public string KotlinDateSwitchField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}Switch";
+            }
+        }
+
+        public string KotlinDateLabelField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}DateInputLayout";
+            }
+        }
+
+        public string KotlinDateTextField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}EditText";
+            }
+        }
         public int MaximumLength
         {
             get
@@ -31,6 +90,10 @@ namespace CodeGenerator
                 switch (DataType)
                 {
                     case SQLDataTypes.varChar:
+                        return maximumLength;
+                    case SQLDataTypes.charType:
+                        return maximumLength;
+                    case SQLDataTypes.ncharData:
                         return maximumLength;
                     case SQLDataTypes.dateTime:
                         return DateTimePrecision;
@@ -42,6 +105,10 @@ namespace CodeGenerator
                         return NumericPrecision;
                     case SQLDataTypes.moneyType:
                         return NumericPrecision;
+                    case SQLDataTypes.floatData:
+                        return 8;
+                    case SQLDataTypes.bit:
+                        return maximumLength;
                     default:
                         return 0;
                 }
@@ -53,7 +120,13 @@ namespace CodeGenerator
         {
             get
             {
+                if (DataType == SQLDataTypes.ncharData)
+                    return (" (" + MaximumLength.ToString() + ")");
+
                 if (DataType == SQLDataTypes.varChar)
+                    return (" (" + MaximumLength.ToString() + ")");
+
+                if (DataType == SQLDataTypes.charType)
                     return (" (" + MaximumLength.ToString() + ")");
 
                 if (DataType == SQLDataTypes.decimalData)
@@ -66,6 +139,7 @@ namespace CodeGenerator
         public string RandomValue()
         {
             Random random = new Random(Guid.NewGuid().GetHashCode());
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
             switch (DataType)
             {
@@ -75,13 +149,12 @@ namespace CodeGenerator
                     long longRand = BitConverter.ToInt32(buf, 0);
                     return Math.Abs(longRand % long.MaxValue).ToString();
                 case SQLDataTypes.varChar:
-                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                    return "\"" + new string(Enumerable.Repeat(chars, (MaximumLength == -1 ? 50 : MaximumLength))
                       .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.uniqueIdentifier:
                     return new Guid().ToString();
                 case SQLDataTypes.bit:
-                    return false.ToString();
+                    return "false";
                 case SQLDataTypes.dateTime:
                     return $"new DateTime({DateTime.Now.Year}, {DateTime.Now.Month}, {DateTime.Now.Day}, {DateTime.Now.Hour}, {DateTime.Now.Minute}, {DateTime.Now.Second})";
                 case SQLDataTypes.varBinary:
@@ -93,9 +166,11 @@ namespace CodeGenerator
                 case SQLDataTypes.floatData:
                     return "float";
                 case SQLDataTypes.ncharData:
-                    return "string";
+                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.charType:
-                    return "string";
+                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.timeType:
                     return "TimeSpan";
                 case SQLDataTypes.moneyType:
@@ -171,7 +246,7 @@ namespace CodeGenerator
                     case SQLDataTypes.binary:
                         return "binary";
                     case SQLDataTypes.floatData:
-                        return "float";
+                        return "double";
                     case SQLDataTypes.ncharData:
                         return "string";
                     case SQLDataTypes.charType:
@@ -180,6 +255,8 @@ namespace CodeGenerator
                         return "TimeSpan";
                     case SQLDataTypes.moneyType:
                         return "decimal";
+                    case SQLDataTypes.bigInt:
+                        return "TimeSpan";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -218,6 +295,8 @@ namespace CodeGenerator
                         return "Time";
                     case SQLDataTypes.moneyType:
                         return "Money";
+                    case SQLDataTypes.bigInt:
+                        return "BigInt";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -232,18 +311,20 @@ namespace CodeGenerator
                 {
                     SQLDataTypes.intData => htmlFormValueType.number,
                     SQLDataTypes.varChar => htmlFormValueType.text,
-                    SQLDataTypes.uniqueIdentifier=> htmlFormValueType.text,
-                    SQLDataTypes.bit=> htmlFormValueType.checkbox,
-                    SQLDataTypes.dateTime=> htmlFormValueType.datetimeLocal,                    
-                    SQLDataTypes.varBinary=> htmlFormValueType.text,                  
-                    SQLDataTypes.decimalData=> htmlFormValueType.number,                       
-                    SQLDataTypes.binary=> htmlFormValueType.number,                     
-                    SQLDataTypes.floatData=> htmlFormValueType.number,                        
-                    SQLDataTypes.ncharData=> htmlFormValueType.text,                       
-                    SQLDataTypes.charType=> htmlFormValueType.text,                       
-                    SQLDataTypes.timeType=> htmlFormValueType.number,                        
-                    SQLDataTypes.moneyType=> htmlFormValueType.number
-                };
+                    SQLDataTypes.uniqueIdentifier => htmlFormValueType.text,
+                    SQLDataTypes.bit => htmlFormValueType.checkbox,
+                    SQLDataTypes.dateTime => htmlFormValueType.datetimeLocal,
+                    SQLDataTypes.varBinary => htmlFormValueType.text,
+                    SQLDataTypes.decimalData => htmlFormValueType.number,
+                    SQLDataTypes.binary => htmlFormValueType.number,
+                    SQLDataTypes.floatData => htmlFormValueType.number,
+                    SQLDataTypes.ncharData => htmlFormValueType.text,
+                    SQLDataTypes.charType => htmlFormValueType.text,
+                    SQLDataTypes.timeType => htmlFormValueType.number,
+                    SQLDataTypes.moneyType => htmlFormValueType.number,
+                    SQLDataTypes.bigInt => htmlFormValueType.number,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
+                } ;
             }
         }
 
@@ -265,7 +346,9 @@ namespace CodeGenerator
                     SQLDataTypes.ncharData => kotlinDataTypes.strings,
                     SQLDataTypes.charType => kotlinDataTypes.strings,
                     SQLDataTypes.timeType => kotlinDataTypes.date,
-                    SQLDataTypes.moneyType => kotlinDataTypes.floatNum
+                    SQLDataTypes.moneyType => kotlinDataTypes.floatNum,
+                    SQLDataTypes.bigInt => kotlinDataTypes.integer,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
         }
@@ -288,7 +371,9 @@ namespace CodeGenerator
                     SQLDataTypes.ncharData => iosDataTypes.strings,
                     SQLDataTypes.charType => iosDataTypes.strings,
                     SQLDataTypes.timeType => iosDataTypes.date,
-                    SQLDataTypes.moneyType => iosDataTypes.floatNum
+                    SQLDataTypes.moneyType => iosDataTypes.floatNum,
+                    SQLDataTypes.bigInt => iosDataTypes.integer,
+                    _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
         }

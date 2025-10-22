@@ -9,7 +9,7 @@ namespace CodeGenerator
     {
         public IOCDataClassesGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "";
+            fileNameSuffix = "";
         }
         public void GenerateRepositoryInterface()
         {

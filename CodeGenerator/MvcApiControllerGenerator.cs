@@ -6,7 +6,7 @@ namespace CodeGenerator
     {
         public MvcApiControllerGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "Controller";
+            fileNameSuffix = "Controller";
         }
 
         internal override void GenerateFilePerTable(SQLTable table)
@@ -51,7 +51,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t\t\t{ClassName(table.Name)} new{table.Name} = value;");
             classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Repository.Save(new{table.Name});");
             classText.AppendLine($"\t\t");
-            classText.AppendLine($"\t\t\treturn new{table.Name}.{table.Name}Id;");
+            classText.AppendLine($"\t\t\treturn new{table.Name}.{table.PrimaryKey.Name};");
             classText.AppendLine("\t\t}");
 
             classText.AppendLine($"\t\t");
@@ -60,7 +60,7 @@ namespace CodeGenerator
             classText.AppendLine("\t\t{");
             classText.AppendLine($"\t\t\t{ClassName(table.Name)} existing{table.Name} = value;");
             classText.AppendLine($"\t\t\t");
-            classText.AppendLine($"\t\t\texisting{table.Name}.{table.Name}Id = id;");
+            classText.AppendLine($"\t\t\texisting{table.Name}.{table.PrimaryKey.Name} = id;");
             classText.AppendLine($"\t\t\t");
             classText.AppendLine($"\t\t\t{Library.LowerFirstCharacter(table.Name)}Repository.Save(existing{table.Name});");
             classText.AppendLine("\t\t}");

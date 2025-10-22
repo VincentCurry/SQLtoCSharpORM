@@ -1,8 +1,9 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace CodeGenerator
 {
@@ -26,6 +27,26 @@ namespace CodeGenerator
             return potentialReturn;
         }
 
+        private static string Decapitalise(string stringToBeDecapitalised)
+        {
+            return stringToBeDecapitalised.Substring(0, 1).ToLower() + stringToBeDecapitalised.Substring(1);
+        }
+
+        internal static string DecapitaliseAndUpdateSwiftKeywords(string stringToBeLowered)
+        {
+            string potentialReturn = Decapitalise(stringToBeLowered);
+
+            string[] swiftKeywords = { "default" };
+
+            foreach(string keyword in swiftKeywords)
+            {
+                if(potentialReturn==keyword)
+                    return "is" + potentialReturn;
+            }
+
+            return potentialReturn;
+        }
+
         internal static string LowerFirstCharacterAndAddUnderscoreToFurtherCapitals(string stringToBeDecapitalised)
         {
 
@@ -40,6 +61,101 @@ namespace CodeGenerator
             }
 
             return potentialReturn;
+        }
+
+        internal static string ValidSqliteColumnName(string columnName)
+        {
+            if (columnName.ToLower() == "default")
+                columnName = "IsDefault";
+
+            return columnName;
+        }
+
+        internal delegate string CodeForColumn(SQLTableColumn column);
+
+        internal static string KotlinParameterNameAndType(SQLTableColumn column)
+        {
+            return $"{column.Name.Decapitalise()}: {column.kotlinDataType}" + (column.Nullable ? "?" : "");
+        }
+        internal static string ColumnNameDecapitalised(SQLTableColumn column)
+        {
+            return column.Name.Decapitalise();
+        }
+        internal static string ColumnName(SQLTableColumn column)
+        {
+            return column.Name; 
+        }
+        internal static string ColumnNameDecapitalisedWithError(SQLTableColumn column)
+        {
+            return $"{column.Name.Decapitalise()}Error";
+        }
+
+        internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
+        {
+            return TableColumnsCode(table.Columns, codeFunction, includePrimaryKey, appendCommas, singleLine);
+        }
+
+        internal static string TableColumnsCode(IEnumerable<SQLTableColumn> columns, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
+        {
+            StringBuilder columnsCode = new StringBuilder();
+
+            bool firstColumn = true;
+
+            foreach (SQLTableColumn column in columns)
+            {
+
+                if (!column.PrimaryKey || includePrimaryKey)
+                {
+                    if (!firstColumn && appendCommas)
+                    {
+                        columnsCode.Append(",");
+                        columnsCode.Append(singleLine ? " " : Environment.NewLine);
+                    }
+
+                    firstColumn = false;
+                    if (singleLine || appendCommas)
+                    {
+                        columnsCode.Append(codeFunction(column));
+                    }
+                    else
+                    {
+                        columnsCode.AppendLine(codeFunction(column));
+                    }
+                }
+            }
+
+            return columnsCode.ToString();
+        }
+
+        internal static void WriteToKotlinStringsFile(string key, string value, string destinationFolder)
+        {
+            WriteKotlinResourceFile("string", key, value, destinationFolder);
+        }
+
+        internal static void WriteToKotlinDimensFile(string key, string value, string destinationFolder)
+        {
+            WriteKotlinResourceFile("dimen", key, value, destinationFolder);
+        }
+
+        private static void WriteKotlinResourceFile(string fileType, string key, string value, string destinationFolder)
+        { 
+            string newLine = $"<{fileType} name=\"{key}\">{value}</{fileType}>";
+
+            string filename = destinationFolder + fileType + "s.xml";
+
+            if (File.Exists(filename))
+            {
+                File.AppendAllText(filename, Environment.NewLine + newLine);
+
+
+            } else {
+
+                TextWriter writer = File.CreateText(filename);
+
+                writer.Write(newLine);
+
+                writer.Close();
+            }
         }
     }
 
@@ -60,6 +176,7 @@ namespace CodeGenerator
         internal const string charType = "char";
         internal const string timeType = "time";
         internal const string moneyType = "money";
+        internal const string bigInt = "bigint";
     }
 
     /*internal class DotNetSqlDataTypes

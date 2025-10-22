@@ -23,7 +23,7 @@ namespace CodeGenerator
                     classText = new System.Text.StringBuilder();
                     GenerateFilePerForeignKey(foreignKeyRelation, foreignKeyClassName);
 
-                    System.IO.TextWriter writer = System.IO.File.CreateText($"{_destinationFolder}{foreignKeyClassName}{filePrefix}.{fileSuffix}");
+                    System.IO.TextWriter writer = System.IO.File.CreateText($"{_destinationFolder}{foreignKeyClassName}{fileNameSuffix}.{fileSuffix}");
 
                     writer.Write(classText.ToString());
 
