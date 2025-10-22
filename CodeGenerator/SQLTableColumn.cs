@@ -24,6 +24,65 @@ namespace CodeGenerator
 
         private int maximumLength;
 
+        public bool IsToBeValidated
+        {
+            get { return !this.PrimaryKey && !this.Nullable; }
+        }
+
+        public string KotlinFragmentNameForPreviousField
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.dateTime)
+                    return KotlinDateLabelField;
+                else
+                    return Name.LowerFirstCharacter();
+            }
+        }
+
+        public string KotlinFragmentNameForNextField
+        {
+            get
+            {
+                if (DataType == SQLDataTypes.dateTime)
+                    return KotlinDateSwitchField;
+                else
+                    return Name.LowerFirstCharacter();
+            }
+        }
+
+        public string KotlinDateSwitchField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}Switch";
+            }
+        }
+
+        public string KotlinDateLabelField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}DateInputLayout";
+            }
+        }
+
+        public string KotlinDateTextField
+        {
+            get
+            {
+                if (DataType != SQLDataTypes.dateTime)
+                    throw new Exception($"{Name} is not a date time field");
+
+                return $"{Name.Decapitalise()}EditText";
+            }
+        }
         public int MaximumLength
         {
             get

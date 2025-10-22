@@ -11,7 +11,7 @@ namespace CodeGenerator
     {
         public SwiftDataBaseGenerator(List<SQLTable> tables, string destinationFolder) : base(tables, destinationFolder)
         {
-            filePrefix = "Database";
+            fileNameSuffix = "Database";
             fileSuffix = "swift";
         }
         internal override void GenerateFilePerTable(SQLTable table)
@@ -147,7 +147,7 @@ namespace CodeGenerator
             classText.AppendLine($"\tstatic var createStatement: String {{ get }}");
             classText.AppendLine($"}}");
 
-            TextWriter writer = File.CreateText($"{_destinationFolder}{filePrefix}.{fileSuffix}");
+            TextWriter writer = File.CreateText($"{_destinationFolder}{fileNameSuffix}.{fileSuffix}");
 
             writer.Write(classText.ToString());
 

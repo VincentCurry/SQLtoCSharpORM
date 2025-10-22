@@ -9,7 +9,7 @@ namespace CodeGenerator
         
         public SqlIntegrationTestsGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "RepositoryIntegrationTest";
+            fileNameSuffix = "RepositoryIntegrationTest";
         }
 
 

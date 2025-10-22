@@ -48,10 +48,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidApiDataSourceGenerator.cs" />
+    <Compile Include="AndroidApiRepositoryGenerator.cs" />
     <Compile Include="AndroidDataAccessObjectGenerator.cs" />
     <Compile Include="AndroidDatabaseGenerator.cs" />
     <Compile Include="AndroidDataClassGenerator.cs" />
+    <Compile Include="AndroidFormFieldGenerator.cs" />
+    <Compile Include="AndroidFormStateGenerator.cs" />
+    <Compile Include="AndroidFragmentCodeGenerator.cs" />
+    <Compile Include="AndroidFragmentLayoutGenerator.cs" />
+    <Compile Include="AndroidModelGenerator.cs" />
     <Compile Include="AndroidRepositoryGenerator.cs" />
+    <Compile Include="AndroidResultGenerator.cs" />
+    <Compile Include="AndroidSaveViewModelGenerator.cs" />
+    <Compile Include="AndroidViewModelFactoryGenerator.cs" />
     <Compile Include="AndroidViewModelGenerator.cs" />
     <Compile Include="GeneratorFromForeignKeys.cs" />
     <Compile Include="MvcApiControllerGenerator.cs" />
@@ -68,6 +78,7 @@
     <Compile Include="SQLForeignKeyRelation.cs" />
     <Compile Include="SQLTable.cs" />
     <Compile Include="SQLTableColumn.cs" />
+    <Compile Include="StringExtensions.cs" />
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />

@@ -10,7 +10,7 @@ namespace CodeGenerator
     {
         public AndroidRepositoryGenerator(List<SQLTable> tables, string destinationFolder, string nameSpace) : base(tables, destinationFolder, nameSpace)
         {
-            filePrefix = "Repository";
+            fileNameSuffix = "Repository";
             fileSuffix = "kt";
         }
 
@@ -49,7 +49,7 @@ namespace CodeGenerator
 
             classText.AppendLine("}");
 
-            TextWriter writer = File.CreateText($"{_destinationFolder}{_nameSpace}{filePrefix}.{fileSuffix}");
+            TextWriter writer = File.CreateText($"{_destinationFolder}{_nameSpace}{fileNameSuffix}.{fileSuffix}");
 
             writer.Write(classText.ToString());
 
