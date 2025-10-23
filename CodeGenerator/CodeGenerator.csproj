@@ -82,6 +82,7 @@
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
     <Compile Include="SwiftFormStateGenerator.cs" />
+    <Compile Include="SwiftModelGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
