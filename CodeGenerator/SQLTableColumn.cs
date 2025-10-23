@@ -378,6 +378,31 @@ namespace CodeGenerator
             }
         }
 
+        public string iosDefaultValue
+        {
+            get
+            {
+                return DataType switch
+                {
+                    SQLDataTypes.intData => "0",
+                    SQLDataTypes.varChar => "\"\"",
+                    SQLDataTypes.uniqueIdentifier => "\"\"",
+                    SQLDataTypes.bit => "false",
+                    SQLDataTypes.dateTime => "Date()",
+                    SQLDataTypes.varBinary => "\"\"",
+                    SQLDataTypes.decimalData => "0",
+                    SQLDataTypes.binary => "0",
+                    SQLDataTypes.floatData => "0",
+                    SQLDataTypes.ncharData => "\"\"",
+                    SQLDataTypes.charType => "\"\"",
+                    SQLDataTypes.timeType => "Date()",
+                    SQLDataTypes.moneyType => "0",
+                    SQLDataTypes.bigInt => "0",
+                    _ => "nil"
+                };
+            }
+        }
+
         public string sqlLiteDataType
         {
             get
