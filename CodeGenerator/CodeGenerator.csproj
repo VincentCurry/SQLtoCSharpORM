@@ -81,6 +81,7 @@
     <Compile Include="StringExtensions.cs" />
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
+    <Compile Include="SwiftDetailViewGenerator.cs" />
     <Compile Include="SwiftFormStateGenerator.cs" />
     <Compile Include="SwiftFormFieldGenerator.cs" />
     <Compile Include="SwiftListViewGenerator.cs" />
