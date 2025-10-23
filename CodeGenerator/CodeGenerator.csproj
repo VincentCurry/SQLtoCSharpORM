@@ -85,6 +85,7 @@
     <Compile Include="SwiftModelGenerator.cs" />
     <Compile Include="SwiftRepositoryGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
+    <Compile Include="SwiftViewModelGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
