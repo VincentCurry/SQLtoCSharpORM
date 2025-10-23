@@ -19,7 +19,8 @@ namespace CodeGenerator
             classText.AppendLine("    var body: some View {");
             classText.AppendLine("        NavigationView {");
             classText.AppendLine($"            List(viewModel.items) {{ item in");
-            classText.AppendLine("                VStack(alignment: .leading) {");
+            classText.AppendLine("                NavigationLink(destination: " +
+                      $"{table.Name}DetailView(item: item)) {{");
 
             foreach (var col in table.Columns.Take(2)) // show first 2 cols
             {
