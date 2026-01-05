@@ -56,7 +56,7 @@ namespace CodeGenerator
             classText.AppendLine($"\tfun getAll(): Flow<List<{className}>>");
 
             classText.AppendLine($"\t@Query(\"SELECT * FROM {className} WHERE {primaryKey} = :{primaryKey}\")");
-            classText.AppendLine($"\tfun getById({primaryKey}: String): Flow<{className}>");
+            classText.AppendLine($"\tfun getById({primaryKey}: String): {className}?");
 
             classText.AppendLine("\t@Insert");
             classText.AppendLine($"\tfun insertAll(vararg {objectName}s: {className})");
