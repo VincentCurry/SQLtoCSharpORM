@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 
 namespace CodeGenerator
@@ -55,7 +56,7 @@ namespace CodeGenerator
         {
             get
             {
-                if (DataType != SQLDataTypes.dateTime)
+                if (DataType != SQLDataTypes.dateTime && DataType != SQLDataTypes.date)
                     throw new Exception($"{Name} is not a date time field");
 
                 return $"{Name.Decapitalise()}Switch";
@@ -66,7 +67,7 @@ namespace CodeGenerator
         {
             get
             {
-                if (DataType != SQLDataTypes.dateTime)
+                if (DataType != SQLDataTypes.dateTime && DataType != SQLDataTypes.date)
                     throw new Exception($"{Name} is not a date time field");
 
                 return $"{Name.Decapitalise()}DateInputLayout";
@@ -77,7 +78,7 @@ namespace CodeGenerator
         {
             get
             {
-                if (DataType != SQLDataTypes.dateTime)
+                if (DataType != SQLDataTypes.dateTime && DataType != SQLDataTypes.date)
                     throw new Exception($"{Name} is not a date time field");
 
                 return $"{Name.Decapitalise()}EditText";
@@ -257,6 +258,8 @@ namespace CodeGenerator
                         return "decimal";
                     case SQLDataTypes.bigInt:
                         return "TimeSpan";
+                    case SQLDataTypes.date:
+                        return "DateTime";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -297,6 +300,8 @@ namespace CodeGenerator
                         return "Money";
                     case SQLDataTypes.bigInt:
                         return "BigInt";
+                    case SQLDataTypes.date:
+                        return "Date";
                     default:
                         throw new SQLDBTypeNotSupported(DataType);
                 }
@@ -323,6 +328,7 @@ namespace CodeGenerator
                     SQLDataTypes.timeType => htmlFormValueType.number,
                     SQLDataTypes.moneyType => htmlFormValueType.number,
                     SQLDataTypes.bigInt => htmlFormValueType.number,
+                    SQLDataTypes.date => htmlFormValueType.date,
                     _ => throw new SQLDBTypeNotSupported(DataType)
                 } ;
             }
@@ -348,6 +354,7 @@ namespace CodeGenerator
                     SQLDataTypes.timeType => kotlinDataTypes.date,
                     SQLDataTypes.moneyType => kotlinDataTypes.floatNum,
                     SQLDataTypes.bigInt => kotlinDataTypes.integer,
+                    SQLDataTypes.date => kotlinDataTypes.date,
                     _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
@@ -373,6 +380,7 @@ namespace CodeGenerator
                     SQLDataTypes.timeType => iosDataTypes.date,
                     SQLDataTypes.moneyType => iosDataTypes.floatNum,
                     SQLDataTypes.bigInt => iosDataTypes.integer,
+                    SQLDataTypes.date => iosDataTypes.date,
                     _ => throw new SQLDBTypeNotSupported(DataType)
                 };
             }
@@ -398,6 +406,7 @@ namespace CodeGenerator
                     SQLDataTypes.timeType => "Date()",
                     SQLDataTypes.moneyType => "0",
                     SQLDataTypes.bigInt => "0",
+                    SQLDataTypes.date => "Date()",
                     _ => "nil"
                 };
             }

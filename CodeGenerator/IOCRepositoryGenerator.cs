@@ -117,6 +117,9 @@ namespace CodeGenerator
                         case SQLDataTypes.dateTime:
                             dataReaderReadStatement = $"Convert.ToDateTime({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
                             break;
+                        case SQLDataTypes.date:
+                            dataReaderReadStatement = $"Convert.ToDateTime({Library.LowerFirstCharacter(table.Name)}sData[\"{column.Name}\"]);";
+                            break;
                         case SQLDataTypes.varBinary:
                             dataReaderReadStatement = "0; //to be honest, I'm a little surpised";
                             break;
