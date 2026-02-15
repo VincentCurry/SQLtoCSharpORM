@@ -157,6 +157,36 @@ namespace CodeGenerator
                 writer.Close();
             }
         }
+
+        internal static string ForeignKeysCode(IEnumerable<SQLForeignKeyRelation> foreignKeys, CodeForColumn codeForForeignKey, bool appendCommas, bool singleLine)
+        {
+            StringBuilder foreignKeyCode = new StringBuilder();
+
+            bool firstColumn = true;
+
+            foreach (SQLForeignKeyRelation foreignKeyRelation in foreignKeys)
+            {
+                if (!firstColumn && appendCommas)
+                {
+                    foreignKeyCode.Append(",");
+                    foreignKeyCode.Append(singleLine ? " " : Environment.NewLine);
+                }
+
+                firstColumn = false;
+
+                if (singleLine || appendCommas)
+                {
+                    foreignKeyCode.Append(codeForForeignKey(foreignKeyRelation.ReferencedTableColumn));
+                }
+                else
+                {
+                    foreignKeyCode.AppendLine(codeForForeignKey(foreignKeyRelation.ReferencedTableColumn));
+                }
+            }
+
+
+            return foreignKeyCode.ToString();
+        }
     }
 
     internal class SQLDataTypes
