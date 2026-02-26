@@ -81,7 +81,16 @@
     <Compile Include="StringExtensions.cs" />
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
+    <Compile Include="SwiftDetailViewGenerator.cs" />
+    <Compile Include="SwiftFormStateGenerator.cs" />
+    <Compile Include="SwiftFormFieldGenerator.cs" />
+    <Compile Include="SwiftFormViewGenerator.cs" />
+    <Compile Include="SwiftListViewGenerator.cs" />
+    <Compile Include="SwiftModelGenerator.cs" />
+    <Compile Include="SwiftRepositoryGenerator.cs" />
+    <Compile Include="SwiftResultStateGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
+    <Compile Include="SwiftViewModelGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
