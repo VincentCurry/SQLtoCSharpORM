@@ -77,6 +77,10 @@ namespace CodeGenerator
         {
             return $"{column.Name.Decapitalise()}: {column.kotlinDataType}" + (column.Nullable ? "?" : "");
         }
+        internal static string CSharpParameterTypeAndNameForFunctionParameter(SQLTableColumn column)
+        {
+            return $"{column.cSharpDataType} {Library.LowerFirstCharacter(column.Name)}";
+        }
         internal static string ColumnNameDecapitalised(SQLTableColumn column)
         {
             return column.Name.Decapitalise();
@@ -88,6 +92,16 @@ namespace CodeGenerator
         internal static string ColumnNameDecapitalisedWithError(SQLTableColumn column)
         {
             return $"{column.Name.Decapitalise()}Error";
+        }
+
+        internal static string SqlParameters(SQLTableColumn column)
+        {
+            return $"[{column.Name}]";
+        }
+
+        internal static string SqlSelectParameters(SQLTableColumn column)
+        {
+            return $" {column.Name} = '{{{Library.LowerFirstCharacter(column.Name)}}}'";
         }
 
         internal static string TableColumnsCode(SQLTable table, CodeForColumn codeFunction, bool includePrimaryKey, bool appendCommas, bool singleLine)
@@ -158,7 +172,7 @@ namespace CodeGenerator
             }
         }
 
-        internal static string ForeignKeysCode(IEnumerable<SQLForeignKeyRelation> foreignKeys, CodeForColumn codeForForeignKey, bool appendCommas, bool singleLine)
+        internal static string ForeignKeysCode(IEnumerable<SQLForeignKeyRelation> foreignKeys, CodeForColumn codeForForeignKey, bool appendCommas, bool singleLine, string separatorCharacter = ",")
         {
             StringBuilder foreignKeyCode = new StringBuilder();
 
@@ -168,7 +182,7 @@ namespace CodeGenerator
             {
                 if (!firstColumn && appendCommas)
                 {
-                    foreignKeyCode.Append(",");
+                    foreignKeyCode.Append(separatorCharacter);
                     foreignKeyCode.Append(singleLine ? " " : Environment.NewLine);
                 }
 

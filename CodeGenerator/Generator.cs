@@ -53,6 +53,21 @@ namespace CodeGenerator
             }
         }
 
+        public void GenerateFileForAllTables(string fileName)
+        {
+            classText = new StringBuilder();
+
+            foreach(SQLTable table in _sQLTables)
+            {
+                GenerateFilePerTable(table);
+            }
+
+            TextWriter writer = File.CreateText(FileName(fileName));
+            writer.Write(classText.ToString());
+
+            writer.Close();
+        }
+
         internal abstract void GenerateFilePerTable(SQLTable table);
 
         internal List<SQLForeignKeyRelation> sQLForeignKeyRelationsForTable(SQLTable table)

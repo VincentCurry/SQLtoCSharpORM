@@ -137,7 +137,7 @@ namespace CodeGenerator
             }
         }
 
-        public string RandomValue()
+        public string RandomValue(bool sqlParameters)
         {
             Random random = new Random(Guid.NewGuid().GetHashCode());
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -150,8 +150,12 @@ namespace CodeGenerator
                     long longRand = BitConverter.ToInt32(buf, 0);
                     return Math.Abs(longRand % long.MaxValue).ToString();
                 case SQLDataTypes.varChar:
-                    return "\"" + new string(Enumerable.Repeat(chars, (MaximumLength == -1 ? 50 : MaximumLength))
-                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
+                    if (sqlParameters)
+                        return new string(Enumerable.Repeat(chars, (MaximumLength == -1 ? 50 : MaximumLength))
+                      .Select(s => s[random.Next(s.Length)]).ToArray());
+                    else
+                        return "\"" + new string(Enumerable.Repeat(chars, (MaximumLength == -1 ? 50 : MaximumLength))
+                          .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.uniqueIdentifier:
                     return new Guid().ToString();
                 case SQLDataTypes.bit:
@@ -167,11 +171,19 @@ namespace CodeGenerator
                 case SQLDataTypes.floatData:
                     return "float";
                 case SQLDataTypes.ncharData:
-                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
-                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
+                    if (sqlParameters)
+                        return new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray());
+                    else
+                        return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                          .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.charType:
-                    return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
-                      .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
+                    if (sqlParameters)
+                        return new string(Enumerable.Repeat(chars, MaximumLength)
+                      .Select(s => s[random.Next(s.Length)]).ToArray());
+                    else
+                        return "\"" + new string(Enumerable.Repeat(chars, MaximumLength)
+                          .Select(s => s[random.Next(s.Length)]).ToArray()) + "\"";
                 case SQLDataTypes.timeType:
                     return "TimeSpan";
                 case SQLDataTypes.moneyType:

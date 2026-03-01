@@ -178,7 +178,7 @@ namespace CodeGenerator
                     if (column.DataType == SQLDataTypes.uniqueIdentifier)
                         columnNames.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = Guid.NewGuid();");
                     else
-                        columnNames.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = {column.RandomValue()};");
+                        columnNames.AppendLine($"\t\tprivate {column.cSharpDataType} _{Library.LowerFirstCharacter(column.Name)} = {column.RandomValue(false)};");
                 }
             }
 

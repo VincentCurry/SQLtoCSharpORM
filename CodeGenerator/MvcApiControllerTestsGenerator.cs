@@ -102,7 +102,7 @@ namespace CodeGenerator
             if (primaryKeyColumn.DataType == SQLDataTypes.uniqueIdentifier)
                 return "Guid.NewGuid()";
             else
-                return primaryKeyColumn.RandomValue().ToString();
+                return primaryKeyColumn.RandomValue(false).ToString();
         }
     }
 }
