@@ -69,9 +69,9 @@ namespace CodeGenerator
 
             classText.AppendLine($"\t\tinternal static void Delete{table.Name}IfRecentlyCreated(Tuple<Guid, bool> {Library.LowerFirstCharacter(table.Name)}IdAndNew)");
             classText.AppendLine($"\t\t{{");
-            classText.AppendLine($"\t\t\tif ({table.Name}IdAndNew.Item2)");
+            classText.AppendLine($"\t\t\tif ({Library.LowerFirstCharacter(table.Name)}IdAndNew.Item2)");
             classText.AppendLine($"\t\t\t{{");
-            classText.AppendLine($"\t\t\t\tstring delete{table.Name}Sql = $\"DELETE {table.Name} WHERE {table.PrimaryKey.Name} = '{{{Library.LowerFirstCharacter(table.Name)}AndNew.Item1}}'\";");
+            classText.AppendLine($"\t\t\t\tstring delete{table.Name}Sql = $\"DELETE {table.Name} WHERE {table.PrimaryKey.Name} = '{{{Library.LowerFirstCharacter(table.Name)}IdAndNew.Item1}}'\";");
             classText.AppendLine($"\t\t\t\tSQLDataServer.ExecuteSQL(delete{table.Name}Sql);");
             classText.AppendLine($"\t\t\t}}");
             classText.AppendLine($"\t\t}}");
