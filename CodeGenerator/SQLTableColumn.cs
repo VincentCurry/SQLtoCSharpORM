@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 
 namespace CodeGenerator
@@ -134,6 +135,32 @@ namespace CodeGenerator
                     return($" ({NumericPrecision},{NumericScale})");
 
                 return "";
+            }
+        }
+
+        public string SizeForCSharpParameters
+        {
+            get
+            {
+                switch (DataType)
+                {
+                    case SQLDataTypes.uniqueIdentifier:
+                        return "SQLParameterSize.UniqueIdentifier";
+                    case SQLDataTypes.bigInt:
+                        return "SQLParameterSize.BigInt";
+                    case SQLDataTypes.intData:
+                        return "SQLParameterSize.Int";
+                    case SQLDataTypes.floatData:
+                        return "SQLParameterSize.Float";
+                    case SQLDataTypes.bit:
+                        return "SQLParameterSize.Bit";
+                    case SQLDataTypes.timeType:
+                        return "SQLParameterSize.Time";
+                    case SQLDataTypes.dateTime:
+                        return "SQLParameterSize.DateTime";
+                    default:
+                        return maximumLength.ToString();
+                }
             }
         }
 

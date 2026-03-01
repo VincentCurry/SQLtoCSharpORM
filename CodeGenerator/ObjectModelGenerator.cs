@@ -79,7 +79,7 @@ namespace CodeGenerator
                 classText.AppendLine("public static " + table.Name + " Get" + table.Name + "ByID(" + table.PrimaryKey.cSharpDataType + " " + Library.LowerFirstCharacter(table.PrimaryKey.Name) + ")");
                 classText.AppendLine("{");
                     classText.AppendLine("List<SqlParameter> parameters = new List<SqlParameter>();");
-                    classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + table.PrimaryKey.Name + "\", " + Library.LowerFirstCharacter(table.PrimaryKey.Name) + ", SqlDbType."+ table.PrimaryKey.dotNetSqlDataTypes+", " + table.PrimaryKey.MaximumLength.ToString() + ");");
+                    classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + table.PrimaryKey.Name + "\", " + Library.LowerFirstCharacter(table.PrimaryKey.Name) + ", SqlDbType."+ table.PrimaryKey.dotNetSqlDataTypes+", " + table.PrimaryKey.SizeForCSharpParameters.ToString() + ");");
                     classText.AppendLine("return Populate" + table.Name + "List(\"" + table.Name + "GetByID\", parameters)[0];");
                 classText.AppendLine("}");
 
@@ -182,7 +182,7 @@ namespace CodeGenerator
                 {
                     if (!column.PrimaryKey)
                     {
-                        classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + column.Name + "\", this." + Library.LowerFirstCharacter(column.Name) + ", SqlDbType." + column.dotNetSqlDataTypes + ", " + column.MaximumLength.ToString() + ");");
+                        classText.AppendLine("SQLDataServer.AddParameter(ref parameters, \"@" + column.Name + "\", this." + Library.LowerFirstCharacter(column.Name) + ", SqlDbType." + column.dotNetSqlDataTypes + ", " + column.SizeForCSharpParameters.ToString() + ");");
                     }
                 }
 

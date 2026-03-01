@@ -35,7 +35,7 @@ namespace CodeGenerator
             classText.AppendLine($"\t\tpublic {dataObjectClassIdentifier} GetByID({table.PrimaryKey.cSharpDataType} {Library.LowerFirstCharacter(table.PrimaryKey.Name)})");
             classText.AppendLine("\t\t{");
             classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
-            classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{table.PrimaryKey.Name}\", {Library.LowerFirstCharacter(table.PrimaryKey.Name)}, SqlDbType.{table.PrimaryKey.dotNetSqlDataTypes}, {table.PrimaryKey.MaximumLength});");
+            classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{table.PrimaryKey.Name}\", {Library.LowerFirstCharacter(table.PrimaryKey.Name)}, SqlDbType.{table.PrimaryKey.dotNetSqlDataTypes}, {table.PrimaryKey.SizeForCSharpParameters});");
             classText.AppendLine($"\t\t\treturn Individual{table.Name}(\"{table.Name}GetByID\", parameters);");
             classText.AppendLine("\t\t}");
             classText.AppendLine("");
@@ -48,7 +48,7 @@ namespace CodeGenerator
                 classText.AppendLine($"\t\tpublic List<{dataObjectClassIdentifier}> GetBy{column.Name}({column.cSharpDataType} {Library.LowerFirstCharacter(column.Name)})");
                 classText.AppendLine("\t\t{");
                 classText.AppendLine("\t\t\tList<SqlParameter> parameters = new List<SqlParameter>();");
-                classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(column.Name)}, SqlDbType.{column.dotNetSqlDataTypes}, {column.MaximumLength});");
+                classText.AppendLine($"\t\t\tSQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(column.Name)}, SqlDbType.{column.dotNetSqlDataTypes}, {column.SizeForCSharpParameters});");
                 classText.AppendLine($"\t\t\treturn Populate{table.Name}List(\"{table.Name}GetBy{column.Name}\", parameters);");
                 classText.AppendLine("\t\t}");
                 classText.AppendLine("");
@@ -290,13 +290,13 @@ namespace CodeGenerator
 
         string AddParameter(SQLTableColumn column)
         {
-            return $"SQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(column.TableName)}.{column.Name}, SqlDbType.{column.dotNetSqlDataTypes}, {column.MaximumLength});";
+            return $"SQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {Library.LowerFirstCharacter(column.TableName)}.{column.Name}, SqlDbType.{column.dotNetSqlDataTypes}, {column.SizeForCSharpParameters});";
         }
 
         string AddParameter(string parameterValue, SQLTableColumn column)
         {
 
-            return $"SQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {parameterValue}, SqlDbType.{column.dotNetSqlDataTypes}, {column.MaximumLength});";
+            return $"SQLDataServer.AddParameter(ref parameters, \"@{column.Name}\", {parameterValue}, SqlDbType.{column.dotNetSqlDataTypes}, {column.SizeForCSharpParameters});";
         }
 
         string ExecuteSP(string tableName, string action)
