@@ -80,17 +80,23 @@
     <Compile Include="SQLTableColumn.cs" />
     <Compile Include="SQLTestStatementGenerator.cs" />
     <Compile Include="StringExtensions.cs" />
+    <Compile Include="SwiftAppContainerGenerator.cs" />
     <Compile Include="SwiftDataBaseGenerator.cs" />
     <Compile Include="SwiftDataItemGenerator.cs" />
     <Compile Include="SwiftDetailViewGenerator.cs" />
+    <Compile Include="SwiftDetailViewModelGenerator.cs" />
     <Compile Include="SwiftFormStateGenerator.cs" />
     <Compile Include="SwiftFormFieldGenerator.cs" />
     <Compile Include="SwiftFormViewGenerator.cs" />
+    <Compile Include="SwiftGenerator.cs" />
     <Compile Include="SwiftListViewGenerator.cs" />
+    <Compile Include="SwiftListViewModelGenerator.cs" />
     <Compile Include="SwiftModelGenerator.cs" />
     <Compile Include="SwiftRepositoryGenerator.cs" />
     <Compile Include="SwiftResultStateGenerator.cs" />
+    <Compile Include="SwiftRootViewGenerator.cs" />
     <Compile Include="SwiftSQLTableExtensionGenerator.cs" />
+    <Compile Include="SwiftSupportFilesGenerator.cs" />
     <Compile Include="SwiftViewModelGenerator.cs" />
     <Compile Include="WebFormGenerator.cs" />
   </ItemGroup>

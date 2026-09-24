@@ -1,61 +1,72 @@
-﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CodeGenerator
 {
-    public class SwiftFormFieldGenerator : Generator
+    /// <summary>
+    /// Generates the per-table enum of validated form fields and the validation rule for each
+    /// (the equivalent of Android's FormField sealed class).
+    /// </summary>
+    public class SwiftFormFieldGenerator : SwiftGenerator
     {
         public SwiftFormFieldGenerator(List<SQLTable> tables, string destinationFolder) : base(tables, destinationFolder)
         {
-            fileNameSuffix = "FormFields";
-            fileSuffix = "swift";
+            fileNameSuffix = "FormField";
         }
 
         internal override void GenerateFilePerTable(SQLTable table)
         {
-            classText.AppendLine($"struct {table.Name}FormFields: View {{");
-            classText.AppendLine($"\t@Binding var state: {table.Name}FormState");
-            classText.AppendLine();
-            classText.AppendLine("\tvar body: some View {");
-            classText.AppendLine("\t\tForm {");
+            List<SQLTableColumn> validatedColumns = SwiftNaming.EditableColumns(table).Where(SwiftNaming.IsValidated).ToList();
 
+            Line(0, "import Foundation");
+            Line();
 
-            classText.AppendLine(Library.TableColumnsCode(table, FormFieldGenerator, includePrimaryKey: false, appendCommas: false, singleLine: false));
+            Line(0, $"/// The {table.Name} form fields that can be invalid: the ones typed into text fields.");
+            Line(0, $"enum {table.Name}FormField: CaseIterable, Hashable {{");
 
-            classText.AppendLine("\t\t}");
-            classText.AppendLine("\t}");
-            classText.AppendLine("}");
+            foreach (SQLTableColumn column in validatedColumns)
+            {
+                Line(1, $"case {SwiftNaming.Property(column)}");
+            }
+
+            Line();
+            Line(1, "/// Returns why the field's current value is invalid, or nil when it is valid.");
+            Line(1, $"func validationMessage(in state: {table.Name}FormState) -> String? {{");
+            Line(2, "switch self {");
+
+            foreach (SQLTableColumn column in validatedColumns)
+            {
+                Line(2, $"case .{SwiftNaming.Property(column)}:");
+                Line(3, $"return {ValidationCall(column)}");
+            }
+
+            Line(2, "}");
+            Line(1, "}");
+            Line(0, "}");
         }
 
-        private string FormFieldGenerator(SQLTableColumn column)
+        private string ValidationCall(SQLTableColumn column)
         {
+            string value = $"state.{SwiftNaming.Property(column)}";
+            string label = $"label: \"{SwiftNaming.Label(column)}\"";
+            string required = $"required: {SwiftNaming.BoolLiteral(!column.Nullable)}";
 
-            if (column.iosDataType.StartsWith("String"))
+            switch (SwiftNaming.Kind(column))
             {
-                return($"\t\t\tTextField(\"{column.Name}\", text: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()})");
-            }
-            else if (column.iosDataType.StartsWith("Int"))
-            {
-                return($"\t\t\tTextField(\"{column.Name}\", value: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()}, format: .number)");
-            }
-            else if (column.iosDataType == "Bool")
-            {
-                return($"\t\t\tToggle(\"{column.Name}\", isOn: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()})");
-            }
-            else if (column.iosDataType == "Date")
-            {
-                return($"\t\t\tDatePicker(\"{column.Name}\", selection: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()})");
-            }
-            else if (column.iosDataType == "Float")
-            {
-                return ($"\t\t\tTextField(\"{column.Name}\", value: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()}, format: .number)");
-            }
-            else if (column.iosDataType == "Double")
-            {
-                return ($"\t\t\tTextField(\"{column.Name}\", value: $state.{column.Name.DecapitaliseAndUpdateSwiftKeywords()}, format: .number)");
-            }
+                case SwiftFieldKind.Integer:
+                    return $"FormValidation.integer({value}, {label}, {required})";
+                case SwiftFieldKind.Real:
+                    return $"FormValidation.decimal({value}, {label}, {required})";
+                default:
+                    if (column.DataType == SQLDataTypes.uniqueIdentifier)
+                        return $"FormValidation.guid({value}, {label}, {required})";
 
-            throw new Exception("Data type not handled");
+                    int? maximumLength = SwiftNaming.MaximumTextLength(column);
+
+                    return maximumLength.HasValue
+                        ? $"FormValidation.text({value}, {label}, {required}, maxLength: {maximumLength.Value})"
+                        : $"FormValidation.text({value}, {label}, {required})";
+            }
         }
     }
 }
