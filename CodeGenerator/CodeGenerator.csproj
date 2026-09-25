@@ -88,6 +88,7 @@
     <Compile Include="SwiftFormStateGenerator.cs" />
     <Compile Include="SwiftFormFieldGenerator.cs" />
     <Compile Include="SwiftFormViewGenerator.cs" />
+    <Compile Include="SwiftFormViewModelGenerator.cs" />
     <Compile Include="SwiftGenerator.cs" />
     <Compile Include="SwiftListViewGenerator.cs" />
     <Compile Include="SwiftListViewModelGenerator.cs" />
