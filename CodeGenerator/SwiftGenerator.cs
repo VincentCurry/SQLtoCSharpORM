@@ -73,7 +73,9 @@ namespace CodeGenerator
         /// </summary>
         protected void WriteSingleFile(string fileNameWithoutExtension)
         {
-            File.WriteAllText(FileName(fileNameWithoutExtension), classText.ToString());
+            string filePath = FileName(fileNameWithoutExtension);
+            EnsureDirectoryExists(filePath);
+            File.WriteAllText(filePath, classText.ToString());
         }
     }
 

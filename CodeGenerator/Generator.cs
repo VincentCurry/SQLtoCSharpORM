@@ -19,6 +19,18 @@ namespace CodeGenerator
         internal string fileNamePrefix;
         internal string fileSuffix = "cs";
 
+        /// <summary>
+        /// Makes sure the folder a file is about to be written to exists, creating it (and any missing parent
+        /// folders) if necessary. Does nothing if it is already there.
+        /// </summary>
+        internal static void EnsureDirectoryExists(string filePath)
+        {
+            string directory = Path.GetDirectoryName(filePath);
+
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+        }
+
         internal virtual string FileName(string tableName)
         {
             return $"{_destinationFolder}{fileNamePrefix}{tableName}{fileNameSuffix}.{fileSuffix}";
@@ -45,7 +57,9 @@ namespace CodeGenerator
 
                 classText = new StringBuilder();
                 GenerateFilePerTable(table);
-                TextWriter writer = File.CreateText(FileName(table.Name));
+                string filePath = FileName(table.Name);
+                EnsureDirectoryExists(filePath);
+                TextWriter writer = File.CreateText(filePath);
 
                 writer.Write(classText.ToString());
 
@@ -62,7 +76,9 @@ namespace CodeGenerator
                 GenerateFilePerTable(table);
             }
 
-            TextWriter writer = File.CreateText(FileName(fileName));
+            string filePath = FileName(fileName);
+            EnsureDirectoryExists(filePath);
+            TextWriter writer = File.CreateText(filePath);
             writer.Write(classText.ToString());
 
             writer.Close();

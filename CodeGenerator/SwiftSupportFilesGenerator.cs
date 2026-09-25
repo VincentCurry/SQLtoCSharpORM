@@ -11,10 +11,16 @@ namespace CodeGenerator
     {
         public void Generate(string destinationFolder)
         {
-            File.WriteAllText(destinationFolder + "APIClient.swift", ApiClientSource);
-            File.WriteAllText(destinationFolder + "FormSupport.swift", FormSupportSource);
-            File.WriteAllText(destinationFolder + "DisplayFormat.swift", DisplayFormatSource);
-            File.WriteAllText(destinationFolder + "ResultState.swift", ResultStateSource);
+            WriteFile(destinationFolder + "APIClient.swift", ApiClientSource);
+            WriteFile(destinationFolder + "FormSupport.swift", FormSupportSource);
+            WriteFile(destinationFolder + "DisplayFormat.swift", DisplayFormatSource);
+            WriteFile(destinationFolder + "ResultState.swift", ResultStateSource);
+        }
+
+        private static void WriteFile(string filePath, string contents)
+        {
+            Generator.EnsureDirectoryExists(filePath);
+            File.WriteAllText(filePath, contents);
         }
 
         private const string ResultStateSource = @"enum ResultState<T> {
