@@ -18,6 +18,7 @@ namespace CodeGenerator
             string name = table.Name;
 
             Line(0, "import SwiftUI");
+            Line(0, "internal import Combine");
             Line();
 
             Line(0, "@MainActor");
